@@ -1,8 +1,8 @@
 package com.pedrofrohmut.todos.dtos;
 
-public class CreateUserDto {
+public class SignedUserDto {
+  public String id;
   public String name;
   public String email;
-  public String password;
-  public String passwordHash;
+  public String token;
 }
