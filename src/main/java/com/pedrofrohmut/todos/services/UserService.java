@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import com.pedrofrohmut.todos.dtos.CreateUserDto;
 import com.pedrofrohmut.todos.dtos.SignInUserDto;
 import com.pedrofrohmut.todos.dtos.SignedUserDto;
+import com.pedrofrohmut.todos.dtos.UserDto;
 import com.pedrofrohmut.todos.errors.NotImplementedException;
 import com.pedrofrohmut.todos.errors.PasswordAndHashDoNotMatchException;
 import com.pedrofrohmut.todos.errors.UserEmailAlreadyTakenException;
@@ -23,7 +24,7 @@ public class UserService {
     this.authService = authService;
   }
 
-  public void  create(CreateUserDto dto) throws SQLException {
+  public void create(CreateUserDto dto) {
     final var foundUser = this.userRepository.findByEmail(dto.email);
     if (foundUser != null) {
       throw new UserEmailAlreadyTakenException(String.format(UserService.errorMessage, "create"));
@@ -32,7 +33,7 @@ public class UserService {
     this.userRepository.create(dto);
   }
 
-  public SignedUserDto signIn(SignInUserDto dto) throws SQLException {
+  public SignedUserDto signIn(SignInUserDto dto) {
     final var foundUser = this.userRepository.findByEmail(dto.email);
     if (foundUser == null) {
       throw new UserNotFoundByEmailException(String.format(UserService.errorMessage, "signIn"));
@@ -42,6 +43,11 @@ public class UserService {
       throw new PasswordAndHashDoNotMatchException(String.format(UserService.errorMessage, "signIn"));
     }
     final var token = this.authService.generateToken(foundUser.id);
+    final var signedUser = mapFoundUserAndTokenToResultDto(foundUser, token);
+    return signedUser;
+  }
+
+  private SignedUserDto mapFoundUserAndTokenToResultDto(UserDto foundUser, String token) {
     final var signedUser = new SignedUserDto();
     signedUser.id = foundUser.id;
     signedUser.name = foundUser.name;

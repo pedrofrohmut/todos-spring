@@ -2,7 +2,9 @@ package com.pedrofrohmut.todos.controllers;
 
 import com.pedrofrohmut.todos.dtos.CreateUserDto;
 import com.pedrofrohmut.todos.dtos.SignInUserDto;
+import com.pedrofrohmut.todos.errors.PasswordAndHashDoNotMatchException;
 import com.pedrofrohmut.todos.errors.UserEmailAlreadyTakenException;
+import com.pedrofrohmut.todos.errors.UserNotFoundByEmailException;
 import com.pedrofrohmut.todos.repositories.UserRepository;
 import com.pedrofrohmut.todos.services.AuthService;
 import com.pedrofrohmut.todos.services.UserService;
@@ -22,15 +24,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("api/users")
 public class UserController {
 
-  // Create User Route
+  private UserService createUserService() {
+    final var connectionFactory = new ConnectionFactory();
+    final var connection = connectionFactory.getConnection();
+    final var userRepository = new UserRepository(connection);
+    final var authService = new AuthService();
+    final var userService = new UserService(userRepository, authService);
+    return userService;
+  }
+
   @PostMapping
   public ResponseEntity<?> create(@RequestBody CreateUserDto dto) {
     try {
-      final var connectionFactory = new ConnectionFactory();
-      final var connection = connectionFactory.getConnection();
-      final var userRepository = new UserRepository(connection);
-      final var authService = new AuthService();
-      final var userService = new UserService(userRepository, authService);
+      final var userService = createUserService();
       userService.create(dto);
       return new ResponseEntity<>(HttpStatus.CREATED);
     } catch (UserEmailAlreadyTakenException e) {
@@ -40,19 +46,19 @@ public class UserController {
     }
   }
 
-  // Sign In User Route
   @PostMapping("/signin")
   public ResponseEntity<?> signIn(@RequestBody SignInUserDto dto) {
-    return new ResponseEntity<>(dto, HttpStatus.OK);
-    // try {
-      // final var signedUser = this.userService.signIn(dto);
-      // return new ResponseEntity<>(signedUser, HttpStatus.OK);
-    // } catch (UserNotFoundByEmailException | UserPasswordIsNotAMatchException e) {
-    //   return new ResponseEntity<>(e.message, HttpStatus.BAD_REQUEST);
-    // }
+    try {
+      final var userService = createUserService();
+      final var signedUser = userService.signIn(dto);
+      return new ResponseEntity<>(signedUser, HttpStatus.OK);
+    } catch (UserNotFoundByEmailException | PasswordAndHashDoNotMatchException e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    } catch (Exception e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  // Get Signed User Route
   @GetMapping("/signed")
   public ResponseEntity<?> getSignedUser(@RequestHeader("authentication_token") String token) {
     return new ResponseEntity<>(token, HttpStatus.OK);
