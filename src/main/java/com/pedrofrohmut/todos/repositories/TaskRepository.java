@@ -95,7 +95,7 @@ public class TaskRepository {
       final var task = new TaskDto();
       task.id = rs.getString("id");
       task.name = rs.getString("name");
-      task.description = rs.getString("description");
+      task.description = rs.getString("description") == null ? "" : rs.getString("description");
       task.userId = userId;
       tasks.add(task);
     } while (rs.next());
