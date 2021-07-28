@@ -2,6 +2,7 @@ package com.pedrofrohmut.todos.controllers;
 
 import com.pedrofrohmut.todos.dtos.CreateTaskDto;
 import com.pedrofrohmut.todos.dtos.UpdateTaskDto;
+import com.pedrofrohmut.todos.errors.TaskNotFoundByIdException;
 import com.pedrofrohmut.todos.errors.UserNotFoundByIdException;
 import com.pedrofrohmut.todos.repositories.TaskRepository;
 import com.pedrofrohmut.todos.repositories.UserRepository;
@@ -31,9 +32,8 @@ public class TaskController {
   public ResponseEntity<?> create(
       @RequestBody CreateTaskDto dto, @RequestHeader(TOKEN_HEADER) String token) {
     try {
-      final var jwtService = new JwtService();
-      final var taskService = createTaskServicePassingJwtService();
-      final var authUserId = jwtService.getUserIdFromToken(token);
+      final var authUserId = getUserIdFromToken(token);
+      final var taskService = createTaskService();
       taskService.create(dto, authUserId);
       return new ResponseEntity<>(dto, HttpStatus.CREATED);
     } catch (UserNotFoundByIdException e) {
@@ -44,7 +44,7 @@ public class TaskController {
     }
   }
 
-  private TaskService createTaskServicePassingJwtService() {
+  private TaskService createTaskService() {
     final var connectionFactory = new ConnectionFactory();
     final var connection = connectionFactory.getConnection();
     final var userRepository = new UserRepository(connection);
@@ -54,8 +54,24 @@ public class TaskController {
   }
 
   @GetMapping("/{taskId}")
-  public ResponseEntity<?> findById(@PathVariable String taskId) {
-    return new ResponseEntity<>(taskId, HttpStatus.OK);
+  public ResponseEntity<?> findById(
+      @PathVariable String taskId, @RequestHeader(TOKEN_HEADER) String token) {
+    try {
+      final var authUserId = getUserIdFromToken(token);
+      final var taskService = createTaskService();
+      final var foundTask = taskService.findById(taskId, authUserId);
+      return new ResponseEntity<>(foundTask, HttpStatus.OK);
+    } catch (UserNotFoundByIdException | TaskNotFoundByIdException e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    } catch (Exception e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  private String getUserIdFromToken(String token) {
+    final var jwtService = new JwtService();
+    final var authUserId = jwtService.getUserIdFromToken(token);
+    return authUserId;
   }
 
   @GetMapping("/user/{userId}")

@@ -38,9 +38,11 @@ public class UserService {
     if (foundUser == null) {
       throw new UserNotFoundByEmailException(String.format(UserService.errorMessage, "signIn"));
     }
-    final var isMatch = this.passwordService.comparePasswordAndHash(dto.password, foundUser.passwordHash);
+    final var isMatch =
+      this.passwordService.comparePasswordAndHash(dto.password, foundUser.passwordHash);
     if (!isMatch) {
-      throw new PasswordAndHashDoNotMatchException(String.format(UserService.errorMessage, "signIn"));
+      throw new PasswordAndHashDoNotMatchException(
+          String.format(UserService.errorMessage, "signIn"));
     }
     final var token = this.jwtService.generateToken(foundUser.id);
     final var signedUser = mapFoundUserAndTokenToResultDto(foundUser, token);
