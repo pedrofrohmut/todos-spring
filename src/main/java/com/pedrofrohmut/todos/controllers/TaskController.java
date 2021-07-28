@@ -2,6 +2,12 @@ package com.pedrofrohmut.todos.controllers;
 
 import com.pedrofrohmut.todos.dtos.CreateTaskDto;
 import com.pedrofrohmut.todos.dtos.UpdateTaskDto;
+import com.pedrofrohmut.todos.errors.UserNotFoundByIdException;
+import com.pedrofrohmut.todos.repositories.TaskRepository;
+import com.pedrofrohmut.todos.repositories.UserRepository;
+import com.pedrofrohmut.todos.services.JwtService;
+import com.pedrofrohmut.todos.services.TaskService;
+import com.pedrofrohmut.todos.utils.ConnectionFactory;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,9 +25,32 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("api/tasks")
 public class TaskController {
 
+  private static final String TOKEN_HEADER = "authentication_token";
+
   @PostMapping
-  public ResponseEntity<?> create(@RequestBody CreateTaskDto dto) {
-    return new ResponseEntity<>(dto, HttpStatus.CREATED);
+  public ResponseEntity<?> create(
+      @RequestBody CreateTaskDto dto, @RequestHeader(TOKEN_HEADER) String token) {
+    try {
+      final var jwtService = new JwtService();
+      final var taskService = createTaskServicePassingJwtService();
+      final var authUserId = jwtService.getUserIdFromToken(token);
+      taskService.create(dto, authUserId);
+      return new ResponseEntity<>(dto, HttpStatus.CREATED);
+    } catch (UserNotFoundByIdException e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  private TaskService createTaskServicePassingJwtService() {
+    final var connectionFactory = new ConnectionFactory();
+    final var connection = connectionFactory.getConnection();
+    final var userRepository = new UserRepository(connection);
+    final var taskRepository = new TaskRepository(connection);
+    final var taskService = new TaskService(userRepository, taskRepository);
+    return taskService;
   }
 
   @GetMapping("/{taskId}")

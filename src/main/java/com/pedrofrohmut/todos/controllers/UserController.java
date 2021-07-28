@@ -68,11 +68,13 @@ public class UserController {
     try {
       final var jwtService = new JwtService();
       final var userService = createUserServicePassingJwtService(jwtService);
-      final var userId = jwtService.getUserIdFromToken(token);
-      final var signedUser = userService.getSigned(userId);
+      final var authUserId = jwtService.getUserIdFromToken(token);
+      final var signedUser = userService.getSigned(authUserId);
       return new ResponseEntity<>(signedUser, HttpStatus.OK);
     } catch (UserNotFoundByIdException | TokenExpiredException | InvalidTokenException e) {
       return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    } catch (Exception e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

@@ -97,11 +97,11 @@ public class UserRepository {
     final var emailPosition = 2;
     final var passwordHashPosition = 3;
     final var sql = "INSERT INTO app.users (name, email, password_hash) VALUES (?, ?, ?)";
-    final var preparedStatement = this.connection.prepareStatement(sql);
-    preparedStatement.setString(namePosition, dto.name);
-    preparedStatement.setString(emailPosition, dto.email);
-    preparedStatement.setString(passwordHashPosition, dto.passwordHash);
-    return preparedStatement;
+    final var stm = this.connection.prepareStatement(sql);
+    stm.setString(namePosition, dto.name);
+    stm.setString(emailPosition, dto.email);
+    stm.setString(passwordHashPosition, dto.passwordHash);
+    return stm;
   }
 
   public void create(CreateUserDto dto) {
