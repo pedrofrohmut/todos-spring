@@ -1,9 +1,12 @@
 package com.pedrofrohmut.todos.services;
 
+import java.util.List;
+
 import com.pedrofrohmut.todos.dtos.CreateTaskDto;
 import com.pedrofrohmut.todos.dtos.TaskDto;
 import com.pedrofrohmut.todos.errors.TaskNotFoundByIdException;
 import com.pedrofrohmut.todos.errors.UserNotFoundByIdException;
+import com.pedrofrohmut.todos.errors.UserNotResourceOwnerException;
 import com.pedrofrohmut.todos.repositories.TaskRepository;
 import com.pedrofrohmut.todos.repositories.UserRepository;
 
@@ -45,6 +48,19 @@ public class TaskService {
       throw new TaskNotFoundByIdException(String.format(TaskService.errorMessage, "findById"));
     }
     return foundTask;
+  }
+
+  public List<TaskDto> findByUserId(String userId, String authUserId) {
+    if (!userId.equals(authUserId)) {
+      throw new UserNotResourceOwnerException(
+          String.format(TaskService.errorMessage, "findByUserId"));
+    }
+    final var foundUser = this.userRepository.findById(userId);
+    if (foundUser == null) {
+      throw new UserNotFoundByIdException(String.format(TaskService.errorMessage, "findByUserId"));
+    }
+    final var tasks = this.taskRepository.findByUserId(userId);
+    return tasks;
   }
 
 }

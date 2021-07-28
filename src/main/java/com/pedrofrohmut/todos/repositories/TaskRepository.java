@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.pedrofrohmut.todos.dtos.CreateTaskDto;
 import com.pedrofrohmut.todos.dtos.TaskDto;
@@ -69,6 +71,48 @@ public class TaskRepository {
       }
       final var foundTask = mapResulToFindById(taskId, rs);
       return foundTask;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private PreparedStatement getPreparedStatementToFindByUserId(String userId) throws SQLException {
+    final var userIdPosition = 1;
+    final var sql = "SELECT id, name, description FROM app.tasks WHERE user_id = ?";
+    final var stm = this.connection.prepareStatement(sql);
+    stm.setObject(userIdPosition, java.util.UUID.fromString(userId));
+    return stm;
+  }
+
+  private ResultSet getResultSetToFindByUserId(PreparedStatement stm) throws SQLException {
+    final var rs = stm.executeQuery();
+    return rs;
+  }
+
+  private List<TaskDto> mapResultToFyByUserId(String userId, ResultSet rs) throws SQLException {
+    final var tasks = new ArrayList<TaskDto>();
+    do {
+      final var task = new TaskDto();
+      task.id = rs.getString("id");
+      task.name = rs.getString("name");
+      task.description = rs.getString("description");
+      task.userId = userId;
+      tasks.add(task);
+    } while (rs.next());
+    return tasks;
+  }
+
+  public List<TaskDto> findByUserId(String userId) {
+    try (
+      final var stm = getPreparedStatementToFindByUserId(userId);
+      final var rs = getResultSetToFindByUserId(stm);
+    ) {
+      final var hasResults = rs.next();
+      if (!hasResults) {
+        return new ArrayList<TaskDto>();
+      }
+      final var foundTasks = mapResultToFyByUserId(userId, rs);
+      return foundTasks;
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }

@@ -75,12 +75,21 @@ public class TaskController {
   }
 
   @GetMapping("/user/{userId}")
-  public ResponseEntity<?> findTasksByUserId(@PathVariable String userId) {
-    return new ResponseEntity<>(userId, HttpStatus.OK);
+  public ResponseEntity<?> findTasksByUserId(
+      @PathVariable String userId, @RequestHeader(TOKEN_HEADER) String token) {
+    try {
+      final var authUserId = getUserIdFromToken(token);
+      final var taskService = createTaskService();
+      final var tasks = taskService.findByUserId(userId, authUserId);
+      return new ResponseEntity<>(tasks, HttpStatus.OK);
+    } catch (Exception e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @PutMapping("/{taskId}")
-  public ResponseEntity<?> update(@RequestBody UpdateTaskDto dto) {
+  public ResponseEntity<?> update(
+      @RequestBody UpdateTaskDto dto, @RequestHeader(TOKEN_HEADER) String token) {
     return new ResponseEntity<>(dto, HttpStatus.OK);
   }
 
