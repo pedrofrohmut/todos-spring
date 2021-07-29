@@ -119,7 +119,7 @@ public class TaskRepository {
     }
   }
 
-  private PreparedStatement getPreparedStatementToUpdate(String taskId, UpdateTaskDto dto)
+  private PreparedStatement getPreparedStatementToUpdate(UpdateTaskDto dto)
       throws SQLException {
     final var namePosition = 1;
     final var descriptionPosition = 2;
@@ -128,13 +128,13 @@ public class TaskRepository {
     final var stm = this.connection.prepareStatement(sql);
     stm.setString(namePosition, dto.name);
     stm.setString(descriptionPosition, dto.description);
-    stm.setObject(taskIdPosition, java.util.UUID.fromString(taskId));
+    stm.setObject(taskIdPosition, java.util.UUID.fromString(dto.id));
     return stm;
   }
 
-  public void update(String taskId, UpdateTaskDto dto) {
+  public void update(UpdateTaskDto dto) {
     try (
-      final var stm = getPreparedStatementToUpdate(taskId, dto);
+      final var stm = getPreparedStatementToUpdate(dto);
     ) {
       stm.executeUpdate();
     } catch (SQLException e) {

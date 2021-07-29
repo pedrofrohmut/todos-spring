@@ -28,13 +28,16 @@ public class TaskService {
     if (foundUser == null) {
       throw new UserNotFoundByIdException(String.format(TaskService.errorMessage, "create"));
     }
-    readyDtoToCreate(dto, authUserId);
-    this.taskRepository.create(dto);
+    final var taskToCreateDto = readyDtoToCreate(dto, authUserId);
+    this.taskRepository.create(taskToCreateDto);
   }
 
-  private void readyDtoToCreate(CreateTaskDto dto, String authUserId) {
-    dto.description = dto.description == null ? "" : dto.description;
-    dto.userId = authUserId;
+  private CreateTaskDto readyDtoToCreate(CreateTaskDto dto, String authUserId) {
+    final var task = new CreateTaskDto();
+    task.name = dto.name;
+    task.description = dto.description == null ? "" : dto.description;
+    task.userId = authUserId;
+    return task;
   }
 
   public TaskDto findById(String taskId, String authUserId) {
@@ -47,7 +50,7 @@ public class TaskService {
       throw new TaskNotFoundByIdException(String.format(TaskService.errorMessage, "findById"));
     }
     if (!foundTask.userId.equals(authUserId)) {
-      throw new UserNotResourceOwnerException(String.format(TaskService.errorMessage, "update"));
+      throw new UserNotResourceOwnerException(String.format(TaskService.errorMessage, "findById"));
     }
     return foundTask;
   }
@@ -77,7 +80,16 @@ public class TaskService {
     if (!foundTask.userId.equals(authUserId)) {
       throw new UserNotResourceOwnerException(String.format(TaskService.errorMessage, "update"));
     }
-    this.taskRepository.update(taskId, dto);
+    final var taskToUpdateDto = readyDtoToUpdate(taskId, dto);
+    this.taskRepository.update(taskToUpdateDto);
+  }
+
+  private UpdateTaskDto readyDtoToUpdate(String taskId, UpdateTaskDto dto) {
+    final var task = new UpdateTaskDto();
+    task.id = taskId;
+    task.name = dto.name;
+    task.description = dto.description == null ? "" : dto.description;
+    return task;
   }
 
   public void delete(String taskId, String authUserId) {

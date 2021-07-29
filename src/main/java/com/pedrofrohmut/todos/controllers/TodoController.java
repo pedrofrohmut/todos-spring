@@ -78,8 +78,21 @@ public class TodoController {
   }
 
   @PutMapping("/{todoId}")
-  public ResponseEntity<?> update(@PathVariable String todoId, @RequestBody UpdateTodoDto dto) {
-    return new ResponseEntity<>(dto, HttpStatus.OK);
+  public ResponseEntity<?> update(
+      @PathVariable String todoId,
+      @RequestBody UpdateTodoDto dto,
+      @RequestHeader(TOKEN_HEADER) String token
+  ) {
+    try {
+      final var authUserId = getUserIdFromToken(token);
+      final var todoService = createTodoService();
+      todoService.update(todoId, dto, authUserId);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (UserNotFoundByIdException | UserNotResourceOwnerException | TodoNotFoundByIdException e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    } catch (Exception e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @PatchMapping("/setdone/{todoId}")

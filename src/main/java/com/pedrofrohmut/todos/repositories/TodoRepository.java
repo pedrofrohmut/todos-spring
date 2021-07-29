@@ -9,6 +9,7 @@ import java.util.List;
 
 import com.pedrofrohmut.todos.dtos.CreateTodoDto;
 import com.pedrofrohmut.todos.dtos.TodoDto;
+import com.pedrofrohmut.todos.dtos.UpdateTodoDto;
 
 public class TodoRepository {
 
@@ -127,6 +128,28 @@ public class TodoRepository {
       todos.add(dto);
     } while (rs.next());
     return todos;
+  }
+
+  private PreparedStatement getPreparedStatementToUpdate(UpdateTodoDto dto) throws SQLException {
+    final var namePosition = 1;
+    final var descriptionPosition = 2;
+    final var todoIdPosition = 3;
+    final var sql = "UPDATE app.todos SET name = ?, description = ? WHERE id = ?";
+    final var stm = this.connection.prepareStatement(sql);
+    stm.setString(namePosition, dto.name);
+    stm.setString(descriptionPosition, dto.description);
+    stm.setObject(todoIdPosition, java.util.UUID.fromString(dto.id));
+    return stm;
+  }
+
+  public void update(UpdateTodoDto dto) {
+    try (
+      final var stm = getPreparedStatementToUpdate(dto);
+    ) {
+      stm.executeUpdate();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }

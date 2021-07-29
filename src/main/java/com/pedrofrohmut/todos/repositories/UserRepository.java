@@ -92,6 +92,14 @@ public class UserRepository {
     }
   }
 
+  public void create(CreateUserDto dto) {
+    try (final var stm = getPrepareStatementToCreate(dto)) {
+      stm.executeUpdate();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private PreparedStatement getPrepareStatementToCreate(CreateUserDto dto) throws SQLException {
     final var namePosition = 1;
     final var emailPosition = 2;
@@ -102,14 +110,6 @@ public class UserRepository {
     stm.setString(emailPosition, dto.email);
     stm.setString(passwordHashPosition, dto.passwordHash);
     return stm;
-  }
-
-  public void create(CreateUserDto dto) {
-    try (final var stm = getPrepareStatementToCreate(dto)) {
-      stm.executeUpdate();
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
   }
 
 }

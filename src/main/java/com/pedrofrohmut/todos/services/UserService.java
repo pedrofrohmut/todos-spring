@@ -29,8 +29,17 @@ public class UserService {
     if (foundUser != null) {
       throw new UserEmailAlreadyTakenException(String.format(UserService.errorMessage, "create"));
     }
-    dto.passwordHash  = this.passwordService.hashPassword(dto.password);
-    this.userRepository.create(dto);
+    final var passwordHash  = this.passwordService.hashPassword(dto.password);
+    final var userToCreateDto = readyDtoToCreate(dto, passwordHash);
+    this.userRepository.create(userToCreateDto);
+  }
+
+  private CreateUserDto readyDtoToCreate(CreateUserDto dto, String hash) {
+    final var user = new CreateUserDto();
+    user.name = dto.name;
+    user.email = dto.email;
+    user.passwordHash = hash;
+    return user;
   }
 
   public SignedUserDto signIn(SignInUserDto dto) {

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.pedrofrohmut.todos.dtos.CreateTodoDto;
 import com.pedrofrohmut.todos.dtos.TodoDto;
+import com.pedrofrohmut.todos.dtos.UpdateTodoDto;
 import com.pedrofrohmut.todos.errors.TaskNotFoundByIdException;
 import com.pedrofrohmut.todos.errors.TodoNotFoundByIdException;
 import com.pedrofrohmut.todos.errors.UserNotFoundByIdException;
@@ -41,14 +42,18 @@ public class TodoService {
     if (!foundTask.userId.equals(authUserId)) {
       throw new UserNotResourceOwnerException(String.format(TodoService.errorMessage, "create"));
     }
-    readyDtoToCreate(dto, authUserId);
-    this.todoRepository.create(dto);
+    final var todoToCreateDto = readyDtoToCreate(dto, authUserId);
+    this.todoRepository.create(todoToCreateDto);
   }
 
-  private void readyDtoToCreate(CreateTodoDto dto, String authUserId) {
-    dto.description = dto.description == null ? "" : dto.description;
-    dto.isDone = false;
-    dto.userId = authUserId;
+  private CreateTodoDto readyDtoToCreate(CreateTodoDto dto, String authUserId) {
+    final var todo = new CreateTodoDto();
+    todo.name = dto.name;
+    todo.description = dto.description == null ? "" : dto.description;
+    todo.isDone = false;
+    todo.taskId = dto.taskId;
+    todo.userId = authUserId;
+    return todo;
   }
 
   public TodoDto findById(String todoId, String authUserId) {
@@ -80,6 +85,30 @@ public class TodoService {
     }
     final var tasks = this.todoRepository.findByTaskId(taskId);
     return tasks;
+  }
+
+  public void update(String todoId, UpdateTodoDto dto, String authUserId) {
+    final var foundUser = this.userRepository.findById(authUserId);
+    if (foundUser == null) {
+      throw new UserNotFoundByIdException(String.format(TodoService.errorMessage, "update"));
+    }
+    final var foundTodo = this.todoRepository.findById(todoId);
+    if (foundTodo == null) {
+      throw new TodoNotFoundByIdException(String.format(TodoService.errorMessage, "update"));
+    }
+    if (!foundTodo.userId.equals(authUserId)) {
+      throw new UserNotResourceOwnerException(String.format(TodoService.errorMessage, "update"));
+    }
+    final var updatedTodoDto = readyDtoToUpdate(todoId,  dto);
+    this.todoRepository.update(updatedTodoDto);
+  }
+
+  private UpdateTodoDto readyDtoToUpdate(String todoId, UpdateTodoDto dto) {
+    final var todo = new UpdateTodoDto();
+    todo.id = todoId;
+    todo.name = dto.name;
+    todo.description = dto.description == null ? "" : dto.description;
+    return todo;
   }
 
 }
