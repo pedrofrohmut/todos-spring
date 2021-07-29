@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.pedrofrohmut.todos.dtos.CreateTodoDto;
 import com.pedrofrohmut.todos.dtos.TodoDto;
@@ -43,6 +45,22 @@ public class TodoRepository {
     return stm;
   }
 
+  public TodoDto findById(String todoId) {
+    try (
+      final var stm = getPreparedStatementToFindById(todoId);
+      final var rs = getResultSetToFindById(stm);
+    ) {
+      final var hasResults = rs.next();
+      if (!hasResults) {
+        return null;
+      }
+      final var todo = mapResultToFindById(todoId, rs);
+      return todo;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private PreparedStatement getPreparedStatementToFindById(String todoId) throws SQLException {
     final var todoIdPosition = 1;
     final var sql = "SELECT name, description, is_done, task_id, user_id FROM app.todos WHERE id = ?";
@@ -67,20 +85,48 @@ public class TodoRepository {
     return dto;
   }
 
-  public TodoDto findById(String todoId) {
+  public List<TodoDto> findByTaskId(String taskId) {
     try (
-      final var stm = getPreparedStatementToFindById(todoId);
-      final var rs = getResultSetToFindById(stm);
+      final var stm = getPreparedStatementToFindByTaskId(taskId);
+      final var rs = getResultSetToFindByTaskId(stm);
     ) {
       final var hasResults = rs.next();
       if (!hasResults) {
-        return null;
+        return new ArrayList<TodoDto>();
       }
-      final var todo = mapResultToFindById(todoId, rs);
-      return todo;
+      final var todos = mapResultToFindByTaskById(taskId, rs);
+      return todos;
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private PreparedStatement getPreparedStatementToFindByTaskId(String taskId) throws SQLException {
+    final var taskIdPosition = 1;
+    final var sql = "SELECT id, name, description, is_done, user_id FROM app.todos WHERE task_id = ?";
+    final var stm = this.connection.prepareStatement(sql);
+    stm.setObject(taskIdPosition, java.util.UUID.fromString(taskId));
+    return stm;
+  }
+
+  private ResultSet getResultSetToFindByTaskId(PreparedStatement stm) throws SQLException {
+    final var rs = stm.executeQuery();
+    return rs;
+  }
+
+  private List<TodoDto> mapResultToFindByTaskById(String taskId, ResultSet rs) throws SQLException {
+    final var todos = new ArrayList<TodoDto>();
+    do {
+      final var dto = new TodoDto();
+      dto.id = rs.getString("id");
+      dto.name = rs.getString("name");
+      dto.description = rs.getString("description");
+      dto.isDone = rs.getBoolean("is_done");
+      dto.taskId = taskId;
+      dto.userId = rs.getString("user_id");
+      todos.add(dto);
+    } while (rs.next());
+    return todos;
   }
 
 }

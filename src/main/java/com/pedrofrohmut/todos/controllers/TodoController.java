@@ -63,8 +63,18 @@ public class TodoController {
   }
 
   @GetMapping("/task/{taskId}")
-  public ResponseEntity<?> findByTaskId(@PathVariable String taskId) {
-    return new ResponseEntity<>(taskId, HttpStatus.OK);
+  public ResponseEntity<?> findByTaskId(
+      @PathVariable String taskId, @RequestHeader(TOKEN_HEADER) String token) {
+    try {
+      final var authUserId = getUserIdFromToken(token);
+      final var todoService = createTodoService();
+      final var tasks = todoService.findByTaskId(taskId, authUserId);
+      return new ResponseEntity<>(tasks, HttpStatus.OK);
+    } catch (UserNotFoundByIdException | UserNotResourceOwnerException | TaskNotFoundByIdException e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    } catch (Exception e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @PutMapping("/{todoId}")

@@ -1,5 +1,7 @@
 package com.pedrofrohmut.todos.services;
 
+import java.util.List;
+
 import com.pedrofrohmut.todos.dtos.CreateTodoDto;
 import com.pedrofrohmut.todos.dtos.TodoDto;
 import com.pedrofrohmut.todos.errors.TaskNotFoundByIdException;
@@ -62,6 +64,22 @@ public class TodoService {
       throw new UserNotResourceOwnerException(String.format(TodoService.errorMessage, "findById"));
     }
     return foundTodo;
+  }
+
+  public List<TodoDto> findByTaskId(String taskId, String authUserId) {
+    final var foundUser = this.userRepository.findById(authUserId);
+    if (foundUser == null) {
+      throw new UserNotFoundByIdException(String.format(TodoService.errorMessage, "findByTaskId"));
+    }
+    final var foundTask = this.taskRepository.findById(taskId);
+    if (foundTask == null) {
+      throw new TaskNotFoundByIdException(String.format(TodoService.errorMessage, "findByTaskId"));
+    }
+    if (!foundTask.userId.equals(authUserId)) {
+      throw new UserNotResourceOwnerException(String.format(TodoService.errorMessage, "findByTaskId"));
+    }
+    final var tasks = this.todoRepository.findByTaskId(taskId);
+    return tasks;
   }
 
 }
