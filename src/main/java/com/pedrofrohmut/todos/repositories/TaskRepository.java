@@ -142,4 +142,22 @@ public class TaskRepository {
     }
   }
 
+  private PreparedStatement getPreparedStatmentToDelete(String taskId) throws SQLException {
+    final var taskIdPosition = 1;
+    final var sql = "DELETE FROM app.tasks WHERE id = ?";
+    final var stm = this.connection.prepareStatement(sql);
+    stm.setObject(taskIdPosition, java.util.UUID.fromString(taskId));
+    return stm;
+  }
+
+  public void delete(String taskId) {
+    try (
+      final var stm = getPreparedStatmentToDelete(taskId);
+    ) {
+      stm.executeUpdate();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
 }

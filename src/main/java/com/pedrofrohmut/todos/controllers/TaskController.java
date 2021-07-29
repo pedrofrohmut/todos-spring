@@ -4,6 +4,7 @@ import com.pedrofrohmut.todos.dtos.CreateTaskDto;
 import com.pedrofrohmut.todos.dtos.UpdateTaskDto;
 import com.pedrofrohmut.todos.errors.TaskNotFoundByIdException;
 import com.pedrofrohmut.todos.errors.UserNotFoundByIdException;
+import com.pedrofrohmut.todos.errors.UserNotResourceOwnerException;
 import com.pedrofrohmut.todos.repositories.TaskRepository;
 import com.pedrofrohmut.todos.repositories.UserRepository;
 import com.pedrofrohmut.todos.services.JwtService;
@@ -98,14 +99,24 @@ public class TaskController {
       final var taskService = createTaskService();
       taskService.update(taskId, dto, authUserId);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (UserNotFoundByIdException | TaskNotFoundByIdException | UserNotResourceOwnerException e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     } catch (Exception e) {
       return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   @DeleteMapping("/{taskId}")
-  public ResponseEntity<?> delete(@PathVariable String taskId) {
-    return new ResponseEntity<>(taskId, HttpStatus.OK);
+  public ResponseEntity<?> delete(
+      @PathVariable String taskId, @RequestHeader(TOKEN_HEADER) String token) {
+    try {
+      final var authUserId = getUserIdFromToken(token);
+      final var taskService = createTaskService();
+      taskService.delete(taskId, authUserId);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (Exception e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
 }

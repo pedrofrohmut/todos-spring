@@ -48,6 +48,9 @@ public class TaskService {
     if (foundTask == null) {
       throw new TaskNotFoundByIdException(String.format(TaskService.errorMessage, "findById"));
     }
+    if (!foundTask.userId.equals(authUserId)) {
+      throw new UserNotResourceOwnerException(String.format(TaskService.errorMessage, "update"));
+    }
     return foundTask;
   }
 
@@ -77,6 +80,21 @@ public class TaskService {
       throw new UserNotResourceOwnerException(String.format(TaskService.errorMessage, "update"));
     }
     this.taskRepository.update(taskId, dto);
+  }
+
+  public void delete(String taskId, String authUserId) {
+    final var foundUser = this.userRepository.findById(authUserId);
+    if (foundUser == null) {
+      throw new UserNotFoundByIdException(String.format(TaskService.errorMessage, "delete"));
+    }
+    final var foundTask = this.taskRepository.findById(taskId);
+    if (foundTask == null) {
+      throw new TaskNotFoundByIdException(String.format(TaskService.errorMessage, "delete"));
+    }
+    if (!foundTask.userId.equals(authUserId)) {
+      throw new UserNotResourceOwnerException(String.format(TaskService.errorMessage, "delete"));
+    }
+    this.taskRepository.delete(taskId);
   }
 
 }
