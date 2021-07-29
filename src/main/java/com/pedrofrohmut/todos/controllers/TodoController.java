@@ -2,6 +2,10 @@ package com.pedrofrohmut.todos.controllers;
 
 import com.pedrofrohmut.todos.dtos.CreateTodoDto;
 import com.pedrofrohmut.todos.dtos.UpdateTodoDto;
+import com.pedrofrohmut.todos.errors.TaskNotFoundByIdException;
+import com.pedrofrohmut.todos.errors.TodoNotFoundByIdException;
+import com.pedrofrohmut.todos.errors.UserNotFoundByIdException;
+import com.pedrofrohmut.todos.errors.UserNotResourceOwnerException;
 import com.pedrofrohmut.todos.repositories.TaskRepository;
 import com.pedrofrohmut.todos.repositories.TodoRepository;
 import com.pedrofrohmut.todos.repositories.UserRepository;
@@ -36,18 +40,30 @@ public class TodoController {
       final var todoService = createTodoService();
       todoService.create(dto, authUserId);
       return new ResponseEntity<>(HttpStatus.CREATED);
+    } catch (UserNotFoundByIdException | UserNotResourceOwnerException | TaskNotFoundByIdException e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     } catch (Exception e) {
       return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   @GetMapping("/{todoId}")
-  public ResponseEntity<?> findOneById(@PathVariable String todoId) {
-    return new ResponseEntity<>(todoId, HttpStatus.OK);
+  public ResponseEntity<?> findById(
+      @PathVariable String todoId, @RequestHeader(TOKEN_HEADER) String token) {
+    try {
+      final var authUserId = getUserIdFromToken(token);
+      final var todoService = createTodoService();
+      final var foundTodo = todoService.findById(todoId, authUserId);
+      return new ResponseEntity<>(foundTodo, HttpStatus.OK);
+    } catch (UserNotFoundByIdException | UserNotResourceOwnerException | TodoNotFoundByIdException e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    } catch (Exception e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @GetMapping("/task/{taskId}")
-  public ResponseEntity<?> findAllByTaskId(@PathVariable String taskId) {
+  public ResponseEntity<?> findByTaskId(@PathVariable String taskId) {
     return new ResponseEntity<>(taskId, HttpStatus.OK);
   }
 

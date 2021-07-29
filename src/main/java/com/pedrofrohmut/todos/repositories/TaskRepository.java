@@ -52,7 +52,7 @@ public class TaskRepository {
     return rs;
   }
 
-  private TaskDto mapResulToFindById(String taskId, ResultSet rs) throws SQLException {
+  private TaskDto mapResultToFindById(String taskId, ResultSet rs) throws SQLException {
     final var dto = new TaskDto();
     dto.id = taskId;
     dto.name = rs.getString("name");
@@ -70,7 +70,7 @@ public class TaskRepository {
       if (!hasResults) {
         return null;
       }
-      final var foundTask = mapResulToFindById(taskId, rs);
+      final var foundTask = mapResultToFindById(taskId, rs);
       return foundTask;
     } catch (SQLException e) {
       throw new RuntimeException(e);
@@ -90,7 +90,7 @@ public class TaskRepository {
     return rs;
   }
 
-  private List<TaskDto> mapResultToFyByUserId(String userId, ResultSet rs) throws SQLException {
+  private List<TaskDto> mapResultToFindByUserId(String userId, ResultSet rs) throws SQLException {
     final var tasks = new ArrayList<TaskDto>();
     do {
       final var task = new TaskDto();
@@ -112,7 +112,7 @@ public class TaskRepository {
       if (!hasResults) {
         return new ArrayList<TaskDto>();
       }
-      final var foundTasks = mapResultToFyByUserId(userId, rs);
+      final var foundTasks = mapResultToFindByUserId(userId, rs);
       return foundTasks;
     } catch (SQLException e) {
       throw new RuntimeException(e);
