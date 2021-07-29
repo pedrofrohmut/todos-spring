@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.pedrofrohmut.todos.dtos.CreateTaskDto;
 import com.pedrofrohmut.todos.dtos.TaskDto;
+import com.pedrofrohmut.todos.dtos.UpdateTaskDto;
 import com.pedrofrohmut.todos.errors.TaskNotFoundByIdException;
 import com.pedrofrohmut.todos.errors.UserNotFoundByIdException;
 import com.pedrofrohmut.todos.errors.UserNotResourceOwnerException;
@@ -61,6 +62,21 @@ public class TaskService {
     }
     final var tasks = this.taskRepository.findByUserId(userId);
     return tasks;
+  }
+
+  public void update(String taskId, UpdateTaskDto dto, String authUserId) {
+    final var foundUser = this.userRepository.findById(authUserId);
+    if (foundUser == null) {
+      throw new UserNotFoundByIdException(String.format(TaskService.errorMessage, "update"));
+    }
+    final var foundTask = this.taskRepository.findById(taskId);
+    if (foundTask == null) {
+      throw new TaskNotFoundByIdException(String.format(TaskService.errorMessage, "update"));
+    }
+    if (!foundTask.userId.equals(authUserId)) {
+      throw new UserNotResourceOwnerException(String.format(TaskService.errorMessage, "update"));
+    }
+    this.taskRepository.update(taskId, dto);
   }
 
 }

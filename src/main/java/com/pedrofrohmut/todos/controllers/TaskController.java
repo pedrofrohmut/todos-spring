@@ -89,8 +89,18 @@ public class TaskController {
 
   @PutMapping("/{taskId}")
   public ResponseEntity<?> update(
-      @RequestBody UpdateTaskDto dto, @RequestHeader(TOKEN_HEADER) String token) {
-    return new ResponseEntity<>(dto, HttpStatus.OK);
+      @PathVariable String taskId,
+      @RequestBody UpdateTaskDto dto,
+      @RequestHeader(TOKEN_HEADER) String token
+  ) {
+    try {
+      final var authUserId = getUserIdFromToken(token);
+      final var taskService = createTaskService();
+      taskService.update(taskId, dto, authUserId);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (Exception e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @DeleteMapping("/{taskId}")

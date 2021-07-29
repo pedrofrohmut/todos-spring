@@ -9,6 +9,7 @@ import java.util.List;
 
 import com.pedrofrohmut.todos.dtos.CreateTaskDto;
 import com.pedrofrohmut.todos.dtos.TaskDto;
+import com.pedrofrohmut.todos.dtos.UpdateTaskDto;
 
 public class TaskRepository {
 
@@ -113,6 +114,29 @@ public class TaskRepository {
       }
       final var foundTasks = mapResultToFyByUserId(userId, rs);
       return foundTasks;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private PreparedStatement getPreparedStatementToUpdate(String taskId, UpdateTaskDto dto)
+      throws SQLException {
+    final var namePosition = 1;
+    final var descriptionPosition = 2;
+    final var taskIdPosition = 3;
+    final var sql = "UPDATE app.tasks SET name = ?, description = ? WHERE id = ?";
+    final var stm = this.connection.prepareStatement(sql);
+    stm.setString(namePosition, dto.name);
+    stm.setString(descriptionPosition, dto.description);
+    stm.setObject(taskIdPosition, java.util.UUID.fromString(taskId));
+    return stm;
+  }
+
+  public void update(String taskId, UpdateTaskDto dto) {
+    try (
+      final var stm = getPreparedStatementToUpdate(taskId, dto);
+    ) {
+      stm.executeUpdate();
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
