@@ -33,9 +33,7 @@ public class TaskService {
   }
 
   private void readyDtoToCreate(CreateTaskDto dto, String authUserId) {
-    if (dto.description == null) {
-      dto.description = "";
-    }
+    dto.description = dto.description == null ? "" : dto.description;
     dto.userId = authUserId;
   }
 

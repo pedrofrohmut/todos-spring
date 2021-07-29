@@ -45,15 +45,6 @@ public class TaskController {
     }
   }
 
-  private TaskService createTaskService() {
-    final var connectionFactory = new ConnectionFactory();
-    final var connection = connectionFactory.getConnection();
-    final var userRepository = new UserRepository(connection);
-    final var taskRepository = new TaskRepository(connection);
-    final var taskService = new TaskService(userRepository, taskRepository);
-    return taskService;
-  }
-
   @GetMapping("/{taskId}")
   public ResponseEntity<?> findById(
       @PathVariable String taskId, @RequestHeader(TOKEN_HEADER) String token) {
@@ -67,12 +58,6 @@ public class TaskController {
     } catch (Exception e) {
       return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  }
-
-  private String getUserIdFromToken(String token) {
-    final var jwtService = new JwtService();
-    final var authUserId = jwtService.getUserIdFromToken(token);
-    return authUserId;
   }
 
   @GetMapping("/user/{userId}")
@@ -117,6 +102,21 @@ public class TaskController {
     } catch (Exception e) {
       return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  private TaskService createTaskService() {
+    final var connectionFactory = new ConnectionFactory();
+    final var connection = connectionFactory.getConnection();
+    final var userRepository = new UserRepository(connection);
+    final var taskRepository = new TaskRepository(connection);
+    final var taskService = new TaskService(userRepository, taskRepository);
+    return taskService;
+  }
+
+  private String getUserIdFromToken(String token) {
+    final var jwtService = new JwtService();
+    final var authUserId = jwtService.getUserIdFromToken(token);
+    return authUserId;
   }
 
 }

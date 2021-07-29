@@ -1,0 +1,50 @@
+package com.pedrofrohmut.todos.services;
+
+import com.pedrofrohmut.todos.dtos.CreateTodoDto;
+import com.pedrofrohmut.todos.errors.TaskNotFoundByIdException;
+import com.pedrofrohmut.todos.errors.UserNotFoundByIdException;
+import com.pedrofrohmut.todos.errors.UserNotResourceOwnerException;
+import com.pedrofrohmut.todos.repositories.TaskRepository;
+import com.pedrofrohmut.todos.repositories.TodoRepository;
+import com.pedrofrohmut.todos.repositories.UserRepository;
+
+public class TodoService {
+
+  private static final String errorMessage = "[TodoService] %s";
+
+  private final UserRepository userRepository;
+  private final TaskRepository taskRepository;
+  private final TodoRepository todoRepository;
+
+  public TodoService(
+      UserRepository userRepository,
+      TaskRepository taskRepository,
+      TodoRepository todoRepository) {
+    this.userRepository = userRepository;
+    this.taskRepository = taskRepository;
+    this.todoRepository = todoRepository;
+  }
+
+  public void create(CreateTodoDto dto, String authUserId) {
+    final var foundUser = this.userRepository.findById(authUserId);
+    if (foundUser == null) {
+      throw new UserNotFoundByIdException(String.format(TodoService.errorMessage, "create"));
+    }
+    final var foundTask = this.taskRepository.findById(dto.taskId);
+    if (foundTask == null) {
+      throw new TaskNotFoundByIdException(String.format(TodoService.errorMessage, "create"));
+    }
+    if (!foundTask.userId.equals(authUserId)) {
+      throw new UserNotResourceOwnerException(String.format(TodoService.errorMessage, "create"));
+    }
+    readyDtoToCreate(dto, authUserId);
+    this.todoRepository.create(dto);
+  }
+
+  private void readyDtoToCreate(CreateTodoDto dto, String authUserId) {
+    dto.description = dto.description == null ? "" : dto.description;
+    dto.isDone = false;
+    dto.userId = authUserId;
+  }
+
+}
