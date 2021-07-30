@@ -164,4 +164,20 @@ public class TodoRepository {
     return stm;
   }
 
+  public void setNotDone(String todoId) {
+    try (final var stm = getPreparedStatementToSetNotDone(todoId)) {
+      stm.executeUpdate();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private PreparedStatement getPreparedStatementToSetNotDone(String todoId) throws SQLException {
+    final var todoIdPosition = 1;
+    final var sql = "UPDATE app.todos SET is_done = false WHERE id = ?";
+    final var stm = this.connection.prepareStatement(sql);
+    stm.setObject(todoIdPosition, java.util.UUID.fromString(todoId));
+    return stm;
+  }
+
 }

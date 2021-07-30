@@ -103,14 +103,26 @@ public class TodoController {
       final var todoService = createTodoService();
       todoService.setDone(todoId, authUserId);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (UserNotFoundByIdException | UserNotResourceOwnerException | TodoNotFoundByIdException e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     } catch (Exception e) {
       return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   @PatchMapping("/setnotdone/{todoId}")
-  public ResponseEntity<?> setNotDone(@PathVariable String todoId) {
-    return new ResponseEntity<>(todoId, HttpStatus.OK);
+  public ResponseEntity<?> setNotDone(
+      @PathVariable String todoId, @RequestHeader(TOKEN_HEADER) String token) {
+    try {
+      final var authUserId = getUserIdFromToken(token);
+      final var todoService = createTodoService();
+      todoService.setNotDone(todoId, authUserId);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (UserNotFoundByIdException | UserNotResourceOwnerException | TodoNotFoundByIdException e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    } catch (Exception e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @DeleteMapping("/{todoId}")
