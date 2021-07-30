@@ -20,9 +20,7 @@ public class TodoRepository {
   }
 
   public void create(CreateTodoDto dto) {
-    try (
-      final var stm = getPreparedStatementToCreate(dto);
-    ) {
+    try (final var stm = getPreparedStatementToCreate(dto)) {
       stm.executeUpdate();
     } catch (SQLException e) {
       throw new RuntimeException(e);
@@ -143,13 +141,27 @@ public class TodoRepository {
   }
 
   public void update(UpdateTodoDto dto) {
-    try (
-      final var stm = getPreparedStatementToUpdate(dto);
-    ) {
+    try (final var stm = getPreparedStatementToUpdate(dto)) {
       stm.executeUpdate();
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public void setDone(String todoId) {
+    try (final var stm = getPreparedStatementToSetDone(todoId)) {
+      stm.executeUpdate();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private PreparedStatement getPreparedStatementToSetDone(String todoId) throws SQLException {
+    final var todoIdPosition = 1;
+    final var sql = "UPDATE app.todos SET is_done = true WHERE id = ?";
+    final var stm = this.connection.prepareStatement(sql);
+    stm.setObject(todoIdPosition, java.util.UUID.fromString(todoId));
+    return stm;
   }
 
 }

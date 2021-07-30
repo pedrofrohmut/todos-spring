@@ -96,8 +96,16 @@ public class TodoController {
   }
 
   @PatchMapping("/setdone/{todoId}")
-  public ResponseEntity<?> setDone(@PathVariable String todoId) {
-    return new ResponseEntity<>(todoId, HttpStatus.OK);
+  public ResponseEntity<?> setDone(
+      @PathVariable String todoId, @RequestHeader(TOKEN_HEADER) String token) {
+    try {
+      final var authUserId = getUserIdFromToken(token);
+      final var todoService = createTodoService();
+      todoService.setDone(todoId, authUserId);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (Exception e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @PatchMapping("/setnotdone/{todoId}")

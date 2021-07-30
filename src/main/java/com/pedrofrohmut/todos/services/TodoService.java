@@ -111,4 +111,18 @@ public class TodoService {
     return todo;
   }
 
+  public void setDone(String todoId, String authUserId) {
+    final var foundUser = this.userRepository.findById(authUserId);
+    if (foundUser == null) {
+      throw new UserNotFoundByIdException(String.format(TodoService.errorMessage, "setDone"));
+    }
+    final var foundTodo = this.todoRepository.findById(todoId);
+    if (foundTodo == null) {
+      throw new TodoNotFoundByIdException(String.format(TodoService.errorMessage, "setDone"));
+    }
+    if (!foundTodo.userId.equals(authUserId)) {
+      throw new UserNotResourceOwnerException(String.format(TodoService.errorMessage, "setDone"));
+    }
+    this.todoRepository.setDone(todoId);
+  }
 }
