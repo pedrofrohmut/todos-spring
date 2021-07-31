@@ -140,4 +140,20 @@ public class TodoService {
     }
     this.todoRepository.setNotDone(todoId);
   }
+
+  public void delete(String todoId, String authUserId) {
+    final var foundUser = this.userRepository.findById(authUserId);
+    if (foundUser == null) {
+      throw new UserNotFoundByIdException(String.format(TodoService.errorMessage, "delete"));
+    }
+    final var foundTodo = this.todoRepository.findById(todoId);
+    if (foundTodo == null) {
+      throw new TodoNotFoundByIdException(String.format(TodoService.errorMessage, "delete"));
+    }
+    if (!foundTodo.userId.equals(authUserId)) {
+      throw new UserNotResourceOwnerException(String.format(TodoService.errorMessage, "delete"));
+    }
+    this.todoRepository.delete(todoId);
+  }
+
 }

@@ -180,4 +180,20 @@ public class TodoRepository {
     return stm;
   }
 
+  public void delete(String todoId) {
+    try (final var stm = getPreparedStatementToDelete(todoId)) {
+      stm.executeUpdate();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private PreparedStatement getPreparedStatementToDelete(String todoId) throws SQLException {
+    final var todoIdPosition = 1;
+    final var sql = "DELETE FROM app.todos WHERE id = ?";
+    final var stm = this.connection.prepareStatement(sql);
+    stm.setObject(todoIdPosition, java.util.UUID.fromString(todoId));
+    return stm;
+  }
+
 }
