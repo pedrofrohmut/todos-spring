@@ -196,4 +196,21 @@ public class TodoRepository {
     return stm;
   }
 
+  public void clearCompleteByTaskId(String taskId) {
+    try (final var stm = getPreparedStatementToClearCompleteByTaskId(taskId)) {
+      stm.executeUpdate();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private PreparedStatement getPreparedStatementToClearCompleteByTaskId(String taskId)
+      throws SQLException {
+    final var taskIdPosition = 1;
+    final var sql = "DELETE FROM app.todos WHERE task_id = ? AND is_done = true";
+    final var stm = this.connection.prepareStatement(sql);
+    stm.setObject(taskIdPosition, java.util.UUID.fromString(taskId));
+    return stm;
+  }
+
 }

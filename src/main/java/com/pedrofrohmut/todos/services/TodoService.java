@@ -156,4 +156,19 @@ public class TodoService {
     this.todoRepository.delete(todoId);
   }
 
+  public void clearCompleteByTaskId(String taskId, String authUserId) {
+    final var foundUser = this.userRepository.findById(authUserId);
+    if (foundUser == null) {
+      throw new UserNotFoundByIdException(String.format(TodoService.errorMessage, "clearCompleteByTaskId"));
+    }
+    final var foundTask = this.taskRepository.findById(taskId);
+    if (foundTask == null) {
+      throw new TaskNotFoundByIdException(String.format(TodoService.errorMessage, "clearCompleteByTaskId"));
+    }
+    if (!foundTask.userId.equals(authUserId)) {
+      throw new UserNotResourceOwnerException(String.format(TodoService.errorMessage, "clearCompleteByTaskId"));
+    }
+    this.todoRepository.clearCompleteByTaskId(taskId);
+  }
+
 }

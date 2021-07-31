@@ -141,8 +141,18 @@ public class TodoController {
   }
 
   @DeleteMapping("/task/{taskId}")
-  public ResponseEntity<?> clearAllCompleteByTaskId(@PathVariable String taskId) {
-    return new ResponseEntity<>(taskId, HttpStatus.OK);
+  public ResponseEntity<?> clearCompleteByTaskId(
+      @PathVariable String taskId, @RequestHeader(TOKEN_HEADER) String token) {
+    try {
+      final var authUserId = getUserIdFromToken(token);
+      final var todoService = createTodoService();
+      todoService.clearCompleteByTaskId(taskId, authUserId);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (UserNotFoundByIdException | UserNotResourceOwnerException | TodoNotFoundByIdException e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    } catch (Exception e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   private TodoService createTodoService() {
