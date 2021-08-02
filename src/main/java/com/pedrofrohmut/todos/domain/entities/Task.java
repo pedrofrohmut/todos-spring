@@ -1,7 +1,6 @@
 package com.pedrofrohmut.todos.domain.entities;
 
 import java.util.List;
-import java.util.UUID;
 
 import com.pedrofrohmut.todos.domain.errors.InvalidTaskException;
 

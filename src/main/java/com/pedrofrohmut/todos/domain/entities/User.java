@@ -10,38 +10,27 @@ public class User extends Entity {
   private final String id;
   private final String name;
   private final String email;
-  private final String password;
+
+  private String password;
+  private String passwordHash;
 
   private List<Task> tasks;
 
-  public User(String id, String name, String email, String password) {
+  public User(String id, String name, String email) {
     this.validateId(id);
     this.validateName(name);
     this.validateEmail(email);
-    this.validatePassword(password);
     this.id = id;
     this.name = name;
     this.email = email;
-    this.password = password;
   }
 
-  public User(String name, String email, String password) {
+  public User(String name, String email) {
     this.validateName(name);
     this.validateEmail(email);
-    this.validatePassword(password);
     this.id = "";
     this.name = name;
     this.email = email;
-    this.password = password;
-  }
-
-  public User(String email, String password) {
-    this.validateEmail(email);
-    this.validatePassword(password);
-    this.id = "";
-    this.name = "";
-    this.email = email;
-    this.password = password;
   }
 
   private void validateName(String name) {
@@ -71,6 +60,12 @@ public class User extends Entity {
     }
   }
 
+  private void validatePasswordHash(String passwordHash) {
+    if (passwordHash.isBlank()) {
+      throw new InvalidUserException("PasswordHash is in blank");
+    }
+  }
+
   private void validateTasks(List<Task> tasks) {
     tasks.forEach(task -> {
       if (!task.getUserId().equals(id)) {
@@ -86,6 +81,18 @@ public class User extends Entity {
   public String getEmail() { return email; }
 
   public String getPassword() { return password; }
+
+  public void setPassword(String password) {
+    this.validatePassword(password);
+    this.password = password;
+  }
+
+  public String getPasswordHash() { return passwordHash; }
+
+  public void setPasswordHash(String passwordHash) {
+    this.validatePasswordHash(passwordHash);
+    this.passwordHash = passwordHash;
+  }
 
   public List<Task> getTasks() { return tasks; }
 
