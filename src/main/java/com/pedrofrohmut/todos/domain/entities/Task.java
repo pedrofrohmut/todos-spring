@@ -35,7 +35,7 @@ public class Task extends Entity {
   }
 
   private void validateName(String name) {
-    if (name.isBlank()) {
+    if (name == null || name.isBlank()) {
       throw new InvalidTaskException("Name is required and cannot be blank");
     }
     if (name.length() > 64 || name.length() < 3) {

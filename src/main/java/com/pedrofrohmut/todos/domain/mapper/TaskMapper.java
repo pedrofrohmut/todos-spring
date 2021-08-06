@@ -1,5 +1,7 @@
 package com.pedrofrohmut.todos.domain.mapper;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 import com.pedrofrohmut.todos.domain.dtos.TaskDto;

@@ -16,6 +16,17 @@ public class User extends Entity {
 
   private List<Task> tasks;
 
+  public User(String id, String name, String email, String passwordHash) {
+    this.validateId(id);
+    this.validateName(name);
+    this.validateEmail(email);
+    this.validatePasswordHash(passwordHash);
+    this.id = id;
+    this.name = name;
+    this.email = email;
+    this.passwordHash = passwordHash;
+  }
+
   public User(String id, String name, String email) {
     this.validateId(id);
     this.validateName(name);
@@ -34,7 +45,7 @@ public class User extends Entity {
   }
 
   private void validateName(String name) {
-    if (name.isBlank()) {
+    if (name == null || name.isBlank()) {
       throw new InvalidUserException("Name is required and cannot be blank");
     }
     if (name.length() < 5 || name.length() > 120) {
@@ -43,7 +54,7 @@ public class User extends Entity {
   }
 
   private void validateEmail(String email) {
-    if (email.isBlank()) {
+    if (email == null || email.isBlank()) {
       throw new InvalidUserException("Email is required and cannot be blank");
     }
     if (!Validator.isEmail(email)) {
@@ -52,7 +63,7 @@ public class User extends Entity {
   }
 
   private void validatePassword(String password) {
-    if (password.isBlank()) {
+    if (password == null || password.isBlank()) {
       throw new InvalidUserException("Password is required and cannot be blank");
     }
     if (password.length() < 3 || password.length() > 32) {
@@ -61,7 +72,7 @@ public class User extends Entity {
   }
 
   private void validatePasswordHash(String passwordHash) {
-    if (passwordHash.isBlank()) {
+    if (passwordHash == null || passwordHash.isBlank()) {
       throw new InvalidUserException("PasswordHash is in blank");
     }
   }

@@ -41,7 +41,7 @@ public class Todo extends Entity {
   }
 
   private void validateTitle(String title) {
-    if (title.isBlank()) {
+    if (title == null || title.isBlank()) {
       throw new InvalidTodoException("Title is required an cannot be blank");
     }
     if (title.length() < 3 || title.length() > 64) {
