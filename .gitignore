@@ -1,6 +1,6 @@
 **/application.properties
 
-**/ConnectionFactory.java
+**/DatabaseConfig.java
 
 HELP.md
 target/
