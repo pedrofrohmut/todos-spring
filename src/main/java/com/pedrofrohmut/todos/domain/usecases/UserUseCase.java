@@ -12,6 +12,7 @@ import com.pedrofrohmut.todos.domain.errors.UserNotFoundByIdException;
 import com.pedrofrohmut.todos.domain.mapper.UserMapper;
 import com.pedrofrohmut.todos.domain.services.JwtService;
 import com.pedrofrohmut.todos.domain.services.PasswordService;
+import com.pedrofrohmut.todos.web.errors.MissingRequestBodyException;
 
 public class UserUseCase {
 
@@ -29,6 +30,9 @@ public class UserUseCase {
   }
 
   public void create(CreateUserDto dto) {
+    if (dto == null) {
+      throw new MissingRequestBodyException(String.format(UserUseCase.errorMessage, "create"));
+    }
     final var foundUser = this.userDataAccess.findByEmail(dto.email);
     if (foundUser != null) {
       throw new UserEmailAlreadyTakenException(String.format(UserUseCase.errorMessage, "create"));

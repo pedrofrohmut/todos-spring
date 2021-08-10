@@ -16,6 +16,7 @@ import com.pedrofrohmut.todos.infra.services.BcryptPasswordService;
 import com.pedrofrohmut.todos.infra.services.JjwtJwtService;
 import com.pedrofrohmut.todos.web.adapter.AdaptedRequest;
 import com.pedrofrohmut.todos.web.dtos.ControllerResponseDto;
+import com.pedrofrohmut.todos.web.errors.MissingRequestBodyException;
 
 public class UserController {
 
@@ -24,7 +25,7 @@ public class UserController {
       final var userUseCase = createUserUseCase();
       userUseCase.create((CreateUserDto) request.body);
       return new ControllerResponseDto<>(201);
-    } catch (UserEmailAlreadyTakenException e) {
+    } catch (MissingRequestBodyException | UserEmailAlreadyTakenException e) {
       return new ControllerResponseDto<>(400, e.getMessage());
     } catch (Exception e) {
       return new ControllerResponseDto<>(500, e.getMessage());
