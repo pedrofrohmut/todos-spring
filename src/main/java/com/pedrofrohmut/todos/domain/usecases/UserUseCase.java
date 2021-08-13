@@ -37,6 +37,7 @@ public class UserUseCase {
     if (foundUser != null) {
       throw new UserEmailAlreadyTakenException(String.format(UserUseCase.errorMessage, "create"));
     }
+    User.validatePassword(dto.password);
     final var passwordHash  = this.passwordService.hashPassword(dto.password);
     final var newUser = new User(dto.name, dto.email);
     newUser.setPasswordHash(passwordHash);

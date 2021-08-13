@@ -13,4 +13,9 @@ public class ControllerResponseDto<T> {
     this.httpStatus = httpStatus;
     this.body = null;
   }
+
+  @Override
+  public String toString() {
+    return "{ httpStatus: " + httpStatus + ", body: " + body + " }";
+  }
 }

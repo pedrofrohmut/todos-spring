@@ -20,15 +20,17 @@ public class SpringAdapter {
       String param
   ) {
     String authUserId = null;
-    try {
-      authUserId = new JjwtJwtService().getUserIdFromToken(token);
-    } catch (Exception e) {
-      return new ResponseEntity<>(e.getMessage(), HttpStatus.valueOf(401));
+    if (token != null) {
+      try {
+        authUserId = new JjwtJwtService().getUserIdFromToken(token);
+      } catch (Exception e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.valueOf(401));
+      }
     }
     try {
       final var controller = getController(controllerClass);
-      final var method = getControllerMethod(controller, controllerClass, controllerMethod);
-      final var adaptedRequest = new AdaptedRequest(body, authUserId, param);
+      final var method = getControllerMethod(controller, controllerMethod);
+      final var adaptedRequest = new AdaptedRequest<>(body, authUserId, param);
       final var controllerResponse = invokeControllerMethod(method, controller, adaptedRequest);
       final var adaptedResponse = adaptResponse(controllerResponse);
       return adaptedResponse;
@@ -37,39 +39,19 @@ public class SpringAdapter {
     }
   }
 
-  @Deprecated
-  public static ResponseEntity<?> callController(
-      String controllerClassString,
-      String controllerMethodString,
-      AdaptedRequest adaptedRequest
-  ) {
-    try {
-      final var controller = getController(controllerClassString);
-      final var method = getControllerMethod(controller, controllerClassString, controllerMethodString);
-      final var controllerResponse = invokeControllerMethod(method, controller, adaptedRequest);
-      final var adaptedResponse = adaptResponse(controllerResponse);
-      return adaptedResponse;
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private static Object getController(String controllerClassString) throws Exception {
-    final var controllerClass = Class.forName(controllerPrefix + controllerClassString);
+  private static Object getController(String className) throws Exception {
+    final var controllerClass = Class.forName(controllerPrefix + className);
     final var controller = controllerClass.getDeclaredConstructor().newInstance();
     return controller;
   }
 
-
-  private static Method getControllerMethod(
-      Object controller, String controllerClassString, String controllerMethodString)
-      throws Exception {
-    final var method = controller.getClass().getMethod(controllerMethodString, AdaptedRequest.class);
+  private static Method getControllerMethod(Object controller, String methodName) throws Exception {
+    final var method = controller.getClass().getMethod(methodName, AdaptedRequest.class);
     return method;
   }
 
   private static ControllerResponseDto<?> invokeControllerMethod(
-      Method method, Object controller, AdaptedRequest adaptedRequest) throws Exception {
+      Method method, Object controller, AdaptedRequest<?> adaptedRequest) throws Exception {
     return (ControllerResponseDto<?>) method.invoke(controller, adaptedRequest);
   }
 

@@ -2,8 +2,6 @@ package com.pedrofrohmut.todos.web.routes;
 
 import com.pedrofrohmut.todos.domain.dtos.CreateTaskDto;
 import com.pedrofrohmut.todos.domain.dtos.UpdateTaskDto;
-import com.pedrofrohmut.todos.infra.services.JjwtJwtService;
-import com.pedrofrohmut.todos.web.adapter.AdaptedRequest;
 import com.pedrofrohmut.todos.web.adapter.SpringAdapter;
 
 import org.springframework.http.ResponseEntity;

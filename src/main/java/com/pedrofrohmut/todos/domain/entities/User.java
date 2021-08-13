@@ -5,7 +5,7 @@ import java.util.List;
 import com.pedrofrohmut.todos.domain.errors.InvalidUserException;
 import com.pedrofrohmut.utils.validation.Validator;
 
-public class User extends Entity {
+public class User {
 
   private final String id;
   private final String name;
@@ -17,10 +17,10 @@ public class User extends Entity {
   private List<Task> tasks;
 
   public User(String id, String name, String email, String passwordHash) {
-    this.validateId(id);
-    this.validateName(name);
-    this.validateEmail(email);
-    this.validatePasswordHash(passwordHash);
+    Entity.validateId(id);
+    User.validateName(name);
+    User.validateEmail(email);
+    User.validatePasswordHash(passwordHash);
     this.id = id;
     this.name = name;
     this.email = email;
@@ -28,23 +28,23 @@ public class User extends Entity {
   }
 
   public User(String id, String name, String email) {
-    this.validateId(id);
-    this.validateName(name);
-    this.validateEmail(email);
+    Entity.validateId(id);
+    User.validateName(name);
+    User.validateEmail(email);
     this.id = id;
     this.name = name;
     this.email = email;
   }
 
   public User(String name, String email) {
-    this.validateName(name);
-    this.validateEmail(email);
+    User.validateName(name);
+    User.validateEmail(email);
     this.id = "";
     this.name = name;
     this.email = email;
   }
 
-  private void validateName(String name) {
+  public static void validateName(String name) {
     if (name == null || name.isBlank()) {
       throw new InvalidUserException("Name is required and cannot be blank");
     }
@@ -53,7 +53,7 @@ public class User extends Entity {
     }
   }
 
-  private void validateEmail(String email) {
+  public static void validateEmail(String email) {
     if (email == null || email.isBlank()) {
       throw new InvalidUserException("Email is required and cannot be blank");
     }
@@ -62,7 +62,7 @@ public class User extends Entity {
     }
   }
 
-  private void validatePassword(String password) {
+  public static void validatePassword(String password) {
     if (password == null || password.isBlank()) {
       throw new InvalidUserException("Password is required and cannot be blank");
     }
@@ -71,15 +71,15 @@ public class User extends Entity {
     }
   }
 
-  private void validatePasswordHash(String passwordHash) {
+  public static void validatePasswordHash(String passwordHash) {
     if (passwordHash == null || passwordHash.isBlank()) {
       throw new InvalidUserException("PasswordHash is in blank");
     }
   }
 
-  private void validateTasks(List<Task> tasks) {
+  public static void validateTasks(List<Task> tasks, String userId) {
     tasks.forEach(task -> {
-      if (!task.getUserId().equals(id)) {
+      if (!task.getUserId().equals(userId)) {
         throw new InvalidUserException("Task do not belong to this user");
       }
     });
@@ -94,22 +94,31 @@ public class User extends Entity {
   public String getPassword() { return password; }
 
   public void setPassword(String password) {
-    this.validatePassword(password);
+    User.validatePassword(password);
     this.password = password;
   }
 
   public String getPasswordHash() { return passwordHash; }
 
   public void setPasswordHash(String passwordHash) {
-    this.validatePasswordHash(passwordHash);
+    User.validatePasswordHash(passwordHash);
     this.passwordHash = passwordHash;
   }
 
   public List<Task> getTasks() { return tasks; }
 
   public void setTasks(List<Task> tasks) {
-    this.validateTasks(tasks);
+    User.validateTasks(tasks, this.id);
     this.tasks = tasks;
+  }
+
+  @Override
+  public String toString() {
+    return "[ id: " + id +
+      ", name: " + name +
+      ", email: " + email +
+      ", password: " + password +
+      ", passwordHash: " + passwordHash + " ]";
   }
 
 }

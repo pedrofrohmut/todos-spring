@@ -6,7 +6,7 @@ import com.pedrofrohmut.todos.domain.errors.InvalidEntityException;
 
 class Entity {
 
-  protected void validateId(String id) {
+  protected static void validateId(String id) {
     if (id.isBlank()) {
       throw new InvalidEntityException("Id is required and cannot be blank");
     }

@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.pedrofrohmut.todos.domain.errors.InvalidTaskException;
 
-public class Task extends Entity {
+public class Task {
 
   private final String id;
   private final String name;
@@ -14,10 +14,10 @@ public class Task extends Entity {
   private List<Todo> todos;
 
   public Task(String id, String name, String description, String userId) {
-    this.validateId(id);
-    this.validateName(name);
-    this.validateDescription(description);
-    this.validateId(userId);
+    Entity.validateId(id);
+    Task.validateName(name);
+    Task.validateDescription(description);
+    Entity.validateId(userId);
     this.id = id;
     this.name = name;
     this.description = description;
@@ -25,16 +25,16 @@ public class Task extends Entity {
   }
 
   public Task(String name, String description, String userId) {
-    this.validateName(name);
-    this.validateDescription(description);
-    this.validateId(userId);
+    Task.validateName(name);
+    Task.validateDescription(description);
+    Entity.validateId(userId);
     this.id = "";
     this.name = name;
     this.description = description;
     this.userId = userId;
   }
 
-  private void validateName(String name) {
+  public static void validateName(String name) {
     if (name == null || name.isBlank()) {
       throw new InvalidTaskException("Name is required and cannot be blank");
     }
@@ -43,18 +43,18 @@ public class Task extends Entity {
     }
   }
 
-  private void validateDescription(String description) {
+  public static void validateDescription(String description) {
     if (description.length() > 255) {
       throw new InvalidTaskException("Description must be less than 255 characters");
     }
   }
 
-  private void validateTodos(List<Todo> todos) {
+  public static void validateTodos(List<Todo> todos, String taskId, String userId) {
     todos.forEach(todo -> {
       if (!todo.getUserId().equals(userId)) {
         throw new InvalidTaskException("Todo do not belong to the user of this task");
       }
-      if (!todo.getTaskId().equals(id)) {
+      if (!todo.getTaskId().equals(taskId)) {
         throw new InvalidTaskException("Todo do not belong to this task");
       }
     });
@@ -71,7 +71,7 @@ public class Task extends Entity {
   public List<Todo> getTodos() { return todos; }
 
   public void setTodos(List<Todo> todos) {
-    this.validateTodos(todos);
+    Task.validateTodos(todos, this.id, this.userId);
     this.todos = todos;
   }
 
