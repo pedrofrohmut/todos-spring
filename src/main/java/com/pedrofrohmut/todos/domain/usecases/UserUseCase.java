@@ -2,12 +2,9 @@ package com.pedrofrohmut.todos.domain.usecases;
 
 import com.pedrofrohmut.todos.domain.dataaccess.UserDataAccess;
 import com.pedrofrohmut.todos.domain.dtos.CreateUserDto;
-import com.pedrofrohmut.todos.domain.dtos.SignInUserDto;
 import com.pedrofrohmut.todos.domain.dtos.SignedUserDto;
 import com.pedrofrohmut.todos.domain.entities.User;
-import com.pedrofrohmut.todos.domain.errors.PasswordAndHashDoNotMatchException;
 import com.pedrofrohmut.todos.domain.errors.UserEmailAlreadyTakenException;
-import com.pedrofrohmut.todos.domain.errors.UserNotFoundByEmailException;
 import com.pedrofrohmut.todos.domain.errors.UserNotFoundByIdException;
 import com.pedrofrohmut.todos.domain.mapper.UserMapper;
 import com.pedrofrohmut.todos.domain.services.JwtService;
@@ -42,22 +39,6 @@ public class UserUseCase {
     final var newUser = new User(dto.name, dto.email);
     newUser.setPasswordHash(passwordHash);
     this.userDataAccess.create(newUser);
-  }
-
-  public SignedUserDto signIn(SignInUserDto dto) {
-    final var foundUser = this.userDataAccess.findByEmail(dto.email);
-    if (foundUser == null) {
-      throw new UserNotFoundByEmailException(String.format(UserUseCase.errorMessage, "signIn"));
-    }
-    final var isMatch =
-      this.passwordService.comparePasswordAndHash(dto.password, foundUser.getPasswordHash());
-    if (!isMatch) {
-      throw new PasswordAndHashDoNotMatchException(
-          String.format(UserUseCase.errorMessage, "signIn"));
-    }
-    final var token = this.jwtService.generateToken(foundUser.getId());
-    final var signedUser = UserMapper.mapEntityAndTokenToSignedUserDto(foundUser, token);
-    return signedUser;
   }
 
   public SignedUserDto getSigned(String userId) {

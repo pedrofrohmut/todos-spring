@@ -81,7 +81,7 @@ class UserControllerCreateTests {
   @Test
   @DisplayName("Invalid body.email => 400/message")
   void invalidBodyEmail() {
-    final var invalidEmail = "mail";
+    final var invalidEmail = "invalid_mail";
     Exception emailErr = getEmailErr(invalidEmail);
     request.body = new CreateUserDto("John Doe", invalidEmail, "password123");
     // Given
@@ -94,14 +94,13 @@ class UserControllerCreateTests {
     assertThat(controllerResponse.body.toString()).contains(emailErr.getMessage());
   }
 
-  private Exception getEmailErr(final String invalidEmail) {
-    Exception emailErr = null;
+  private Exception getEmailErr(String invalidEmail) {
     try {
       User.validateEmail(invalidEmail);
+      return null;
     } catch (Exception e) {
-      emailErr = e;
+      return e;
     }
-    return emailErr;
   }
 
   @Test
@@ -148,7 +147,7 @@ class UserControllerCreateTests {
     assertThat(controllerResponse.body.toString()).contains(UserEmailAlreadyTakenException.message);
   }
 
-  private UserController getControllerMockReturnUserDB(final CreateUserDto newUser, final UserDataAccess mockUserDataAccess) {
+  private UserController getControllerMockReturnUserDB(CreateUserDto newUser, UserDataAccess mockUserDataAccess) {
     final var passwordHash = passwordService.hashPassword(newUser.password);
     final var userDB = new User(UUID.randomUUID().toString(), newUser.name, newUser.email, passwordHash);
     when(mockUserDataAccess.findByEmail(newUser.email)).thenReturn(userDB);

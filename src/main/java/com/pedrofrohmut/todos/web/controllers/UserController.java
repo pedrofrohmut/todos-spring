@@ -1,11 +1,8 @@
 package com.pedrofrohmut.todos.web.controllers;
 
 import com.pedrofrohmut.todos.domain.dtos.CreateUserDto;
-import com.pedrofrohmut.todos.domain.dtos.SignInUserDto;
 import com.pedrofrohmut.todos.domain.errors.InvalidUserException;
-import com.pedrofrohmut.todos.domain.errors.PasswordAndHashDoNotMatchException;
 import com.pedrofrohmut.todos.domain.errors.UserEmailAlreadyTakenException;
-import com.pedrofrohmut.todos.domain.errors.UserNotFoundByEmailException;
 import com.pedrofrohmut.todos.domain.errors.UserNotFoundByIdException;
 import com.pedrofrohmut.todos.domain.usecases.UserUseCase;
 import com.pedrofrohmut.todos.infra.dataaccess.UserDataAccessImpl;
@@ -35,17 +32,6 @@ public class UserController {
       userUseCase.create(request.body);
       return new ControllerResponseDto<>(201);
     } catch (MissingRequestBodyException | UserEmailAlreadyTakenException | InvalidUserException e) {
-      return new ControllerResponseDto<>(400, e.getMessage());
-    } catch (Exception e) {
-      return new ControllerResponseDto<>(500, e.getMessage());
-    }
-  }
-
-  public ControllerResponseDto<?> signIn(AdaptedRequest<SignInUserDto> request) {
-    try {
-      final var signedUser = userUseCase.signIn(request.body);
-      return new ControllerResponseDto<>(200, signedUser);
-    } catch (UserNotFoundByEmailException | PasswordAndHashDoNotMatchException e) {
       return new ControllerResponseDto<>(400, e.getMessage());
     } catch (Exception e) {
       return new ControllerResponseDto<>(500, e.getMessage());
