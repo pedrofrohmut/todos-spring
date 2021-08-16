@@ -20,4 +20,15 @@ public class ConnectionFactory {
     }
   }
 
+  public Connection getTestConnection() {
+    try {
+      Class.forName(TEST_DRIVER);
+      final var connection =
+        DriverManager.getConnection(TEST_URL, TEST_USER, TEST_PASSWORD);
+      return connection;
+    } catch (Exception e) {
+      throw new GetConnectionException(e.getMessage());
+    }
+  }
+
 }

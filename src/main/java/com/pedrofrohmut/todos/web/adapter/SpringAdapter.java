@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 
 public class SpringAdapter {
 
-  private static final String controllerPrefix = "com.pedrofrohmut.todos.web.controllers.";
+  private static final String CONTROLLER_PREFIX = "com.pedrofrohmut.todos.web.controllers.";
 
   public static ResponseEntity<?> callController(
       String controllerClass,
@@ -40,7 +40,7 @@ public class SpringAdapter {
   }
 
   private static Object getController(String className) throws Exception {
-    final var controllerClass = Class.forName(controllerPrefix + className);
+    final var controllerClass = Class.forName(CONTROLLER_PREFIX + className);
     final var controller = controllerClass.getDeclaredConstructor().newInstance();
     return controller;
   }
