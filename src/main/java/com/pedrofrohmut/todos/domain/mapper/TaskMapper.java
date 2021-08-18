@@ -1,6 +1,7 @@
 package com.pedrofrohmut.todos.domain.mapper;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.pedrofrohmut.todos.domain.dtos.TaskDto;
 import com.pedrofrohmut.todos.domain.entities.Task;
@@ -24,7 +25,7 @@ public class TaskMapper {
       tasks
         .stream()
         .map(task -> TaskMapper.mapEntityToTaskDto(task))
-        .toList();
+        .collect(Collectors.toList());
   }
 
 }

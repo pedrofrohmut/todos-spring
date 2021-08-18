@@ -1,6 +1,7 @@
 package com.pedrofrohmut.todos.domain.mapper;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.pedrofrohmut.todos.domain.dtos.TodoDto;
 import com.pedrofrohmut.todos.domain.entities.Todo;
@@ -8,6 +9,9 @@ import com.pedrofrohmut.todos.domain.entities.Todo;
 public class TodoMapper {
 
   public static TodoDto mapEntityToTodoDto(Todo todo) {
+    if (todo == null) {
+      return null;
+    }
     final var todoDto = new TodoDto();
     todoDto.id = todo.getId();
     todoDto.title = todo.getTitle();
@@ -23,7 +27,7 @@ public class TodoMapper {
       todos
         .stream()
         .map(todo -> TodoMapper.mapEntityToTodoDto(todo))
-        .toList();
+        .collect(Collectors.toList());
   }
 
 }
