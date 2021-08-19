@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class UserRoutes {
 
   @PostMapping
-  public ResponseEntity<?> create(@RequestBody CreateUserDto dto) throws ClassNotFoundException {
+  public ResponseEntity<?> create(@RequestBody CreateUserDto dto) {
     return SpringAdapter.callController("UserController", "create", dto, null, null);
   }
 
