@@ -9,17 +9,18 @@
     <version>2.5.2</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
+
   <groupId>com.pedrofrohmut</groupId>
   <artifactId>todos</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>todos</name>
   <description>Demo project for Spring Boot</description>
+
   <properties>
     <java.version>14</java.version>
   </properties>
 
   <dependencies>
-
     <!-- ### Spring ### -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -83,6 +84,48 @@
     </dependency>
   </dependencies>
 
+  <!-- to run all tests: $ mvn test -->
+  <profiles>
+    <!-- $ mvn test -P unit-tests-->
+    <profile>
+      <id>unit-tests</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>2.22.2</version>
+            <configuration>
+              <!-- Include Tags -->
+              <groups>unit</groups>
+              <!-- Exclude Tags -->
+              <excludedGroups>integration</excludedGroups>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- $ mvn test -P integration-tests -->
+    <profile>
+      <id>integration-tests</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>2.22.2</version>
+            <configuration>
+              <!-- Include Tags -->
+              <groups>integration</groups>
+              <!-- Exclude Tags -->
+              <excludedGroups>unit</excludedGroups>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+  <!-- Default build -->
   <build>
     <plugins>
       <plugin>
@@ -91,5 +134,4 @@
       </plugin>
     </plugins>
   </build>
-
 </project>

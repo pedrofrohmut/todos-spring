@@ -17,9 +17,11 @@ import com.pedrofrohmut.todos.web.routes.UserRoutes;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 
+@Tag("integration")
 @DisplayName("User Routes")
 public class UserRoutesTests {
 

@@ -22,8 +22,10 @@ import com.pedrofrohmut.todos.web.errors.MissingRequestBodyException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+@Tag("unit")
 @DisplayName("User controller - create method")
 class UserControllerCreateTests {
 
