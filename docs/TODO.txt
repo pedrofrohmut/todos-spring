@@ -1,0 +1,11 @@
+20/08/2021 - UseCaseFactory (NOT_DONE)
+
+  - Create a UseCaseFactory that accepts a connection and a class name and returns a UseCase
+  for that name using the connection passed.
+
+  Ex: UseCaseFactory.getInstance("SignInUserUseCase", connection)
+
+  - Controllers use the UseCaseFactory to create the use cases or receive the useCase instance in
+  the method calls
+
+  Ex: userController.signIn(request) or userController.signIn(signInUseCase, request)

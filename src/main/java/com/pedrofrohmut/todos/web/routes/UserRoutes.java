@@ -23,7 +23,7 @@ public class UserRoutes {
 
   @PostMapping("/signin")
   public ResponseEntity<?> signIn(@RequestBody SignInUserDto dto) {
-    return SpringAdapter.callController("users.SignInUserController", "execute", dto, null, null);
+    return SpringAdapter.callController("UserController", "signIn", dto, null, null);
   }
 
   @GetMapping("/signed")

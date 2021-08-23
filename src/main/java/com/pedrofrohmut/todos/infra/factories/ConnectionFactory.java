@@ -9,7 +9,7 @@ import static com.pedrofrohmut.todos.infra.config.DatabaseConfig.*;
 
 public class ConnectionFactory {
 
-  public Connection getConnection() {
+  public static Connection getConnection() {
     try {
       Class.forName(POSTGRES_DRIVER);
       final var connection =
@@ -20,7 +20,7 @@ public class ConnectionFactory {
     }
   }
 
-  public Connection getTestConnection() {
+  public static Connection getTestConnection() {
     try {
       Class.forName(TEST_DRIVER);
       final var connection =

@@ -4,9 +4,9 @@ import java.util.UUID;
 
 import com.pedrofrohmut.todos.domain.errors.InvalidEntityException;
 
-class Entity {
+public class Entity {
 
-  protected static void validateId(String id) {
+  public static void validateId(String id) {
     if (id.isBlank()) {
       throw new InvalidEntityException("Id is required and cannot be blank");
     }
