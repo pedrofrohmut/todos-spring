@@ -1,6 +1,6 @@
 **/application.properties
 
-**/DatabaseConfig.java
+**/DatabaseSecrets.java
 
 HELP.md
 target/

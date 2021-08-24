@@ -1,4 +1,4 @@
-20/08/2021 - UseCaseFactory (NOT_DONE)
+20/08/2021 - UseCaseFactory (DONE)
 
   - Create a UseCaseFactory that accepts a connection and a class name and returns a UseCase
   for that name using the connection passed.
@@ -9,3 +9,14 @@
   the method calls
 
   Ex: userController.signIn(request) or userController.signIn(signInUseCase, request)
+
+====================================================================================================
+24/08/2021 - Integration Tests (NOT_DONE)
+
+  - Create integration test that integrate all the routes flow: the controller that receives a
+  useCase with a test connection and returns a ControllerResponseDto (no mocks).
+
+  - Create tests for the SpringAdapter individually. Since it will not be tested in the integration
+  tests.
+
+  - Removing Route testing since it will be pointless.
