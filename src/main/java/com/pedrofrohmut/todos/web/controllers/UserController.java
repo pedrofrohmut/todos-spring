@@ -23,18 +23,14 @@ import com.pedrofrohmut.todos.web.errors.MissingRequestBodyException;
 public class UserController {
 
   public ControllerResponseDto<?> create(AdaptedRequest<CreateUserDto> request) {
-    return create(null, request);
+    final var connection = ConnectionFactory.getConnection();
+    final var createUserUseCase = (CreateUserUseCase) UseCaseFactory.getInstance("CreateUserUseCase", connection);
+    return create(createUserUseCase, request);
   }
 
   public ControllerResponseDto<?> create(CreateUserUseCase createUserUseCase, AdaptedRequest<CreateUserDto> request) {
     try {
-      if (createUserUseCase == null) {
-        final var connection = ConnectionFactory.getConnection();
-        final var useCase = (CreateUserUseCase) UseCaseFactory.getInstance("CreateUserUseCase", connection);
-        useCase.execute(request.body);
-      } else {
-        createUserUseCase.execute(request.body);
-      }
+      createUserUseCase.execute(request.body);
       return new ControllerResponseDto<>(201);
     } catch (MissingRequestBodyException | UserEmailAlreadyTakenException | InvalidUserException e) {
       return new ControllerResponseDto<>(400, e.getMessage());
@@ -44,19 +40,14 @@ public class UserController {
   }
 
   public ControllerResponseDto<?> signIn(AdaptedRequest<SignInUserDto> request) {
-    return signIn(null, request);
+    final var connection = ConnectionFactory.getConnection();
+    final var signInUserUseCase = (SignInUserUseCase) UseCaseFactory.getInstance("SignInUserUseCase", connection);
+    return signIn(signInUserUseCase, request);
   }
 
   public ControllerResponseDto<?> signIn(SignInUserUseCase signInUserUseCase, AdaptedRequest<SignInUserDto> request) {
     try {
-      SignedUserDto signedUser = null;
-      if (signInUserUseCase == null) {
-        final var connection = ConnectionFactory.getConnection();
-        final var useCase = (SignInUserUseCase) UseCaseFactory.getInstance("SignInUserUseCase", connection);
-        signedUser = useCase.execute(request.body);
-      } else {
-        signedUser = signInUserUseCase.execute(request.body);
-      }
+      final var signedUser = signInUserUseCase.execute(request.body);
       return new ControllerResponseDto<>(200, signedUser);
     } catch (
         MissingRequestBodyException |
@@ -71,19 +62,14 @@ public class UserController {
   }
 
   public ControllerResponseDto<?> getSigned(AdaptedRequest<?> request) {
-    return getSigned(null, request);
+    final var connection = ConnectionFactory.getConnection();
+    final var getSignedUserUseCase = (GetSignedUserUseCase) UseCaseFactory.getInstance("GetSignedUserUseCase", connection);
+    return getSigned(getSignedUserUseCase, request);
   }
 
   public ControllerResponseDto<?> getSigned(GetSignedUserUseCase getSignedUserUseCase, AdaptedRequest<?> request) {
     try {
-      SignedUserDto signedUser = null;
-      if (getSignedUserUseCase == null) {
-        final var connection = ConnectionFactory.getConnection();
-        final var useCase = (GetSignedUserUseCase) UseCaseFactory.getInstance("GetSignedUserUseCase", connection);
-        signedUser = useCase.execute(request.authUserId);
-      } else {
-        signedUser = getSignedUserUseCase.execute(request.authUserId);
-      }
+      final var signedUser = getSignedUserUseCase.execute(request.authUserId);
       return new ControllerResponseDto<>(200, signedUser);
     } catch (MissingRequestAuthUserIdException | UserNotFoundByIdException | TokenExpiredException | InvalidTokenException e) {
       return new ControllerResponseDto<>(400, e.getMessage());

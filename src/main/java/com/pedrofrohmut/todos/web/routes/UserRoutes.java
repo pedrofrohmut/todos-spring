@@ -28,7 +28,7 @@ public class UserRoutes {
 
   @GetMapping("/signed")
   public ResponseEntity<?> getSignedUser(@RequestHeader("authentication_token") String token) {
-    return SpringAdapter.callController("UserController", "getSignedUser", null, token, null);
+    return SpringAdapter.callController("UserController", "getSigned", null, token, null);
   }
 
 }
