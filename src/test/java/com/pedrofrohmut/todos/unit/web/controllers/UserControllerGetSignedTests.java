@@ -1,17 +1,17 @@
 package com.pedrofrohmut.todos.unit.web.controllers;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.util.UUID;
 
+import com.pedrofrohmut.todos.domain.dataaccess.UserDataAccess;
 import com.pedrofrohmut.todos.domain.dtos.SignedUserDto;
 import com.pedrofrohmut.todos.domain.entities.User;
 import com.pedrofrohmut.todos.domain.errors.UserNotFoundByIdException;
-import com.pedrofrohmut.todos.domain.factories.UseCaseFactory;
 import com.pedrofrohmut.todos.domain.services.JwtService;
 import com.pedrofrohmut.todos.domain.services.PasswordService;
 import com.pedrofrohmut.todos.domain.usecases.users.GetSignedUserUseCase;
-import com.pedrofrohmut.todos.infra.factories.ConnectionFactory;
 import com.pedrofrohmut.todos.infra.services.BcryptPasswordService;
 import com.pedrofrohmut.todos.infra.services.JjwtJwtService;
 import com.pedrofrohmut.todos.mocks.UserDataAccessMock;
@@ -38,10 +38,10 @@ public class UserControllerGetSignedTests {
   final PasswordService passwordService;
 
   public UserControllerGetSignedTests() {
-    final var connection = ConnectionFactory.getTestConnection();
-    getSignedUserUseCase = (GetSignedUserUseCase) UseCaseFactory.getInstance("GetSignedUserUseCase", connection);
-    userController = new UserController();
+    final var mockUserDataAccess = mock(UserDataAccess.class);
     jwtService = new JjwtJwtService();
+    getSignedUserUseCase = new GetSignedUserUseCase(mockUserDataAccess, jwtService);
+    userController = new UserController();
     passwordService = new BcryptPasswordService();
   }
 

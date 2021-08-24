@@ -1,15 +1,15 @@
 package com.pedrofrohmut.todos.unit.web.controllers;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
+import com.pedrofrohmut.todos.domain.dataaccess.UserDataAccess;
 import com.pedrofrohmut.todos.domain.dtos.CreateUserDto;
 import com.pedrofrohmut.todos.domain.entities.User;
 import com.pedrofrohmut.todos.domain.errors.InvalidUserException;
 import com.pedrofrohmut.todos.domain.errors.UserEmailAlreadyTakenException;
-import com.pedrofrohmut.todos.domain.factories.UseCaseFactory;
 import com.pedrofrohmut.todos.domain.services.PasswordService;
 import com.pedrofrohmut.todos.domain.usecases.users.CreateUserUseCase;
-import com.pedrofrohmut.todos.infra.factories.ConnectionFactory;
 import com.pedrofrohmut.todos.infra.services.BcryptPasswordService;
 import com.pedrofrohmut.todos.mocks.UserDataAccessMock;
 import com.pedrofrohmut.todos.web.adapter.AdaptedRequest;
@@ -35,10 +35,10 @@ class UserControllerCreateTests {
 
 
   public UserControllerCreateTests() {
-    final var connection = ConnectionFactory.getTestConnection();
-    createUserUseCase = (CreateUserUseCase) UseCaseFactory.getInstance("CreateUserUseCase", connection);
-    userController = new UserController();
     passwordService = new BcryptPasswordService();
+    final var mockUserDataAccess = mock(UserDataAccess.class);
+    createUserUseCase = new CreateUserUseCase(mockUserDataAccess, passwordService);
+    userController = new UserController();
   }
 
   AdaptedRequest<CreateUserDto> request;
