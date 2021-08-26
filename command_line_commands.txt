@@ -1,0 +1,17 @@
+# Maven Clean
+mvn clean
+
+# Check Compilation
+mvn clean compile
+
+# Check all
+mvn clean package
+
+# All test
+mvn test
+
+# Unit tests
+mvn test -P unit-tests
+
+# Integrations tests
+mvn test -P integration-tests

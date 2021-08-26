@@ -20,3 +20,6 @@
   tests.
 
   - Removing Route testing since it will be pointless.
+
+  - SpringAdapter returns 404 when controller and/or method not found with the string passed and
+  should no longer throws any errors
