@@ -1,4 +1,4 @@
-package com.pedrofrohmut.todos.unit.web.controllers;
+package com.pedrofrohmut.todos.unit.web.controllers.users;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;

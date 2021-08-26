@@ -1,4 +1,4 @@
-package com.pedrofrohmut.todos.unit.web.controllers;
+package com.pedrofrohmut.todos.unit.web.controllers.users;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -49,7 +49,7 @@ class UserControllerCreateTests {
   }
 
   @Test
-  @DisplayName("Null body -> 400/message")
+  @DisplayName("Null body => 400/message")
   void nullBody() {
     // Given
     assertThat(request.body).isNull();
@@ -76,14 +76,13 @@ class UserControllerCreateTests {
     assertThat(controllerResponse.body.toString()).contains(nameErr.getMessage());
   }
 
-  private Exception getNameErr(final String invalidName) {
-    Exception nameErr = null;
+  private Exception getNameErr(String name) {
     try {
-      User.validateName(invalidName);
+      User.validateName(name);
+      return null;
     } catch (Exception e) {
-      nameErr = e;
+      return e;
     }
-    return nameErr;
   }
 
   @Test
