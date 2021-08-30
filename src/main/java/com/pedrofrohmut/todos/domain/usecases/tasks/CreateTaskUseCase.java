@@ -24,6 +24,7 @@ public class CreateTaskUseCase {
   public void execute(CreateTaskDto newTask, String authUserId) {
     checkIfBodyIsMissing(newTask);
     checkAuthUserId(authUserId);
+    checkUserExists(authUserId);
     createTask(newTask, authUserId);
   }
 
@@ -43,7 +44,10 @@ public class CreateTaskUseCase {
       throw new MissingRequestAuthUserIdException(errorMessage);
     }
     Entity.validateId(authUserId);
-    final var foundUser = userDataAccess.findById(authUserId);
+  }
+
+  private void checkUserExists(String userId) {
+    final var foundUser = userDataAccess.findById(userId);
     if (foundUser == null) {
       throw new UserNotFoundByIdException(errorMessage);
     }

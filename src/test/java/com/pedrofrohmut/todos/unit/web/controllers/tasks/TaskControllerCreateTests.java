@@ -2,9 +2,6 @@ package com.pedrofrohmut.todos.unit.web.controllers.tasks;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import org.mockito.Mockito;
 
 import java.util.UUID;
 
@@ -13,7 +10,6 @@ import com.pedrofrohmut.todos.domain.dataaccess.UserDataAccess;
 import com.pedrofrohmut.todos.domain.dtos.CreateTaskDto;
 import com.pedrofrohmut.todos.domain.entities.Entity;
 import com.pedrofrohmut.todos.domain.entities.Task;
-import com.pedrofrohmut.todos.domain.entities.User;
 import com.pedrofrohmut.todos.domain.errors.InvalidEntityException;
 import com.pedrofrohmut.todos.domain.errors.InvalidTaskException;
 import com.pedrofrohmut.todos.domain.errors.UserNotFoundByIdException;
@@ -168,12 +164,12 @@ public class TaskControllerCreateTests {
   }
 
   @Test
-  @DisplayName("Valid request but user not found with request.authUserId => 400/message")
+  @DisplayName("Valid request but user not found by request.authUserId => 400/message")
   void userNotFound() {
     final var mockUserDataAccess = UserDataAccessMock.getMockForUserNotFoundById(USER_ID);
     final var createTaskUseCase = new CreateTaskUseCase(mockTaskDataAccess, mockUserDataAccess);
-    request.body = new CreateTaskDto(TASK_NAME, TASK_DESCRIPTION);
     final var foundUser = mockUserDataAccess.findById(USER_ID);
+    request.body = new CreateTaskDto(TASK_NAME, TASK_DESCRIPTION);
     request.authUserId = USER_ID;
     // Given
     assertThat(foundUser).isNull();

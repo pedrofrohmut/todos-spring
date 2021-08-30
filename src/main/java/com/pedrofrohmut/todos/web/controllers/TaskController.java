@@ -10,6 +10,7 @@ import com.pedrofrohmut.todos.domain.errors.UserNotResourceOwnerException;
 import com.pedrofrohmut.todos.domain.factories.UseCaseFactory;
 import com.pedrofrohmut.todos.domain.usecases.TaskUseCase;
 import com.pedrofrohmut.todos.domain.usecases.tasks.CreateTaskUseCase;
+import com.pedrofrohmut.todos.domain.usecases.tasks.FindTaskByIdUseCase;
 import com.pedrofrohmut.todos.infra.dataaccess.TaskDataAccessImpl;
 import com.pedrofrohmut.todos.infra.dataaccess.UserDataAccessImpl;
 import com.pedrofrohmut.todos.infra.factories.ConnectionFactory;
@@ -17,6 +18,7 @@ import com.pedrofrohmut.todos.web.adapter.AdaptedRequest;
 import com.pedrofrohmut.todos.web.dtos.ControllerResponseDto;
 import com.pedrofrohmut.todos.web.errors.MissingRequestAuthUserIdException;
 import com.pedrofrohmut.todos.web.errors.MissingRequestBodyException;
+import com.pedrofrohmut.todos.web.errors.MissingRequestParametersException;
 
 public class TaskController {
 
@@ -28,7 +30,8 @@ public class TaskController {
 
   public ControllerResponseDto<?> create(CreateTaskUseCase createTaskUseCase, AdaptedRequest<CreateTaskDto> request) {
     try {
-      createTaskUseCase.execute(request.body, request.authUserId);
+      final var newTask = request.body;
+      createTaskUseCase.execute(newTask, request.authUserId);
       return new ControllerResponseDto<>(201);
     } catch (MissingRequestBodyException | InvalidTaskException | InvalidEntityException | UserNotFoundByIdException e) {
       return new ControllerResponseDto<>(400, e.getMessage());
@@ -39,14 +42,26 @@ public class TaskController {
     }
   }
 
-  public ControllerResponseDto<?> findById(AdaptedRequest request) {
+  public ControllerResponseDto<?> findById(AdaptedRequest<?> request) {
+    final var connection = ConnectionFactory.getConnection();
+    final var findTaskByIdUseCase = (FindTaskByIdUseCase) UseCaseFactory.getInstance("FindTaskByIdUseCase", connection);
+    return findById(findTaskByIdUseCase, request);
+  }
+
+  public ControllerResponseDto<?> findById(FindTaskByIdUseCase findTaskByIdUseCase, AdaptedRequest<?> request) {
     try {
-      final var taskUseCase = createTaskUseCase();
-      final var foundTask = taskUseCase.findById(request.param, request.authUserId);
+      final var taskId = request.param;
+      final var foundTask = findTaskByIdUseCase.execute(taskId, request.authUserId);
       return new ControllerResponseDto<>(200, foundTask);
     } catch (
-        UserNotFoundByIdException | TaskNotFoundByIdException | UserNotResourceOwnerException e) {
+        UserNotFoundByIdException |
+        TaskNotFoundByIdException |
+        UserNotResourceOwnerException |
+        InvalidEntityException |
+        MissingRequestParametersException e) {
       return new ControllerResponseDto<>(400, e.getMessage());
+    } catch (MissingRequestAuthUserIdException e) {
+        return new ControllerResponseDto<>(401, e.getMessage());
     } catch (Exception e) {
       return new ControllerResponseDto<>(500, e.getMessage());
     }
