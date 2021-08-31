@@ -30,7 +30,7 @@ public class GetSignedUserUseCase {
   }
 
   private void checkIfAuthUserIdIsNull(String authUserId) {
-    if (authUserId == null) {
+    if (authUserId == null || authUserId == "") {
       throw new MissingRequestAuthUserIdException(errorMessage);
     }
   }

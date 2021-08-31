@@ -8,6 +8,7 @@ import javax.crypto.SecretKey;
 
 import com.pedrofrohmut.todos.domain.services.JwtService;
 import com.pedrofrohmut.todos.infra.dtos.AuthTokenDto;
+import com.pedrofrohmut.todos.infra.errors.DecodeJWTException;
 
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -76,8 +77,12 @@ public class JjwtJwtService implements JwtService {
   }
 
   public String getUserIdFromToken(String token) {
-    final var decoded = decodeToken(token);
-    return decoded.userId;
+    try {
+      final var decoded = decodeToken(token);
+      return decoded.userId;
+    } catch (Exception e) {
+      throw new DecodeJWTException("[JjwtJwtService] getUserIdFromToken");
+    }
   }
 
 }
