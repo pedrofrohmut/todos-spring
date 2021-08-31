@@ -11,7 +11,7 @@
   Ex: userController.signIn(request) or userController.signIn(signInUseCase, request)
 
 ====================================================================================================
-24/08/2021 - Integration Tests (NOT_DONE)
+24/08/2021 - Integration Tests (DONE)
 
   - Create integration test that integrate all the routes flow: the controller that receives a
   useCase with a test connection and returns a ControllerResponseDto (no mocks).
