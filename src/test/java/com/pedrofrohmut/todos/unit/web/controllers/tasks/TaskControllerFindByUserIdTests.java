@@ -150,7 +150,7 @@ public class TaskControllerFindByUserIdTests {
   }
 
   @Test
-  @DisplayName("Request.param and authUserId do not match => 400/message")
+  @DisplayName("Request.param and authUserId do not match => 401/message")
   void requestParamAndAuthUserIdDontMatch() {
     final var notMatchingUserId = UUID.randomUUID().toString();
     request.authUserId = USER_ID;
@@ -161,7 +161,7 @@ public class TaskControllerFindByUserIdTests {
     // When
     final var controllerResponse = taskController.findByUserId(findTasksByUserIdUseCase, request);
     // Then
-    assertThat(controllerResponse.httpStatus).isEqualTo(400);
+    assertThat(controllerResponse.httpStatus).isEqualTo(401);
     assertThat(controllerResponse.body.toString()).contains(UserNotResourceOwnerException.message);
   }
 

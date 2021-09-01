@@ -199,7 +199,6 @@ public class TaskControllerFindByIdTests {
     assertThat(request.param).isEqualTo(otherUserTaskId);
     // When
     final var controllerResponse = taskController.findById(findTaskByIdUseCase, request);
-    System.out.println(controllerResponse);
     // Then
     assertThat(controllerResponse.httpStatus).isEqualTo(401);
     assertThat(controllerResponse.body.toString()).contains(UserNotResourceOwnerException.message);
