@@ -7,6 +7,7 @@ import com.pedrofrohmut.todos.domain.entities.Entity;
 import com.pedrofrohmut.todos.domain.entities.Task;
 import com.pedrofrohmut.todos.domain.errors.TaskNotFoundByIdException;
 import com.pedrofrohmut.todos.domain.errors.UserNotFoundByIdException;
+import com.pedrofrohmut.todos.domain.errors.UserNotResourceOwnerException;
 import com.pedrofrohmut.todos.domain.mapper.TaskMapper;
 import com.pedrofrohmut.todos.web.errors.MissingRequestAuthUserIdException;
 import com.pedrofrohmut.todos.web.errors.MissingRequestParametersException;
@@ -28,6 +29,7 @@ public class FindTaskByIdUseCase {
     checkUserExists(authUserId);
     checkTaskId(taskId);
     final var foundTask = findTaskById(taskId);
+    checkResourceOwnership(foundTask, authUserId);
     final var task = getTaskDto(foundTask);
     return task;
   }
@@ -59,6 +61,12 @@ public class FindTaskByIdUseCase {
       throw new TaskNotFoundByIdException(errorMessage);
     }
     return foundTask;
+  }
+
+  private void checkResourceOwnership(Task task, String userId) {
+    if (!task.getUserId().equals(userId)) {
+      throw new UserNotResourceOwnerException(errorMessage);
+    }
   }
 
   private TaskDto getTaskDto(Task task) {

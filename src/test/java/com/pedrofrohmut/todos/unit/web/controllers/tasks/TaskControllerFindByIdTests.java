@@ -1,7 +1,6 @@
 package com.pedrofrohmut.todos.unit.web.controllers.tasks;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 import java.util.UUID;
 
@@ -9,9 +8,11 @@ import com.pedrofrohmut.todos.domain.dataaccess.TaskDataAccess;
 import com.pedrofrohmut.todos.domain.dataaccess.UserDataAccess;
 import com.pedrofrohmut.todos.domain.dtos.TaskDto;
 import com.pedrofrohmut.todos.domain.entities.Entity;
+import com.pedrofrohmut.todos.domain.entities.Task;
 import com.pedrofrohmut.todos.domain.errors.InvalidEntityException;
 import com.pedrofrohmut.todos.domain.errors.TaskNotFoundByIdException;
 import com.pedrofrohmut.todos.domain.errors.UserNotFoundByIdException;
+import com.pedrofrohmut.todos.domain.errors.UserNotResourceOwnerException;
 import com.pedrofrohmut.todos.domain.services.PasswordService;
 import com.pedrofrohmut.todos.domain.usecases.tasks.FindTaskByIdUseCase;
 import com.pedrofrohmut.todos.infra.services.BcryptPasswordService;
@@ -176,6 +177,32 @@ public class TaskControllerFindByIdTests {
     // Then
     assertThat(controllerResponse.httpStatus).isEqualTo(400);
     assertThat(controllerResponse.body.toString()).contains(TaskNotFoundByIdException.message);
+  }
+
+  @Test
+  @DisplayName("Valid request, user and task found but task.userId != authUserId => 401/message")
+  void userAndTaskFoundButUserNotOwner() {
+    final var otherUserId = UUID.randomUUID().toString();
+    final var otherUserTask = new Task(UUID.randomUUID().toString(), TASK_NAME, TASK_DESCRIPTION, otherUserId);
+    final var otherUserTaskId = otherUserTask.getId();
+    final var mockTaskDataAccess =
+      TaskDataAccessMock.getMockForTaskFoundById(otherUserTaskId, TASK_NAME, TASK_DESCRIPTION, otherUserId);
+    final var findTaskByIdUseCase = new FindTaskByIdUseCase(mockTaskDataAccess, mockUserDataAccess);
+    final var foundUser = mockUserDataAccess.findById(USER_ID);
+    final var foundTask = mockTaskDataAccess.findById(otherUserTaskId);
+    request.authUserId = USER_ID;
+    request.param = otherUserTaskId;
+    // Given
+    assertThat(foundUser).isNotNull();
+    assertThat(foundTask).isNotNull();
+    assertThat(foundTask.getUserId()).isNotEqualTo(USER_ID);
+    assertThat(request.param).isEqualTo(otherUserTaskId);
+    // When
+    final var controllerResponse = taskController.findById(findTaskByIdUseCase, request);
+    System.out.println(controllerResponse);
+    // Then
+    assertThat(controllerResponse.httpStatus).isEqualTo(401);
+    assertThat(controllerResponse.body.toString()).contains(UserNotResourceOwnerException.message);
   }
 
   @Test

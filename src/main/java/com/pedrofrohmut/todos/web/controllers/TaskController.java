@@ -57,11 +57,10 @@ public class TaskController {
     } catch (
         UserNotFoundByIdException |
         TaskNotFoundByIdException |
-        UserNotResourceOwnerException |
         InvalidEntityException |
         MissingRequestParametersException e) {
       return new ControllerResponseDto<>(400, e.getMessage());
-    } catch (MissingRequestAuthUserIdException e) {
+    } catch (MissingRequestAuthUserIdException | UserNotResourceOwnerException e) {
         return new ControllerResponseDto<>(401, e.getMessage());
     } catch (Exception e) {
       return new ControllerResponseDto<>(500, e.getMessage());
