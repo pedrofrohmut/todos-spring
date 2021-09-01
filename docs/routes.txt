@@ -6,7 +6,7 @@ USERS
 TASKS
   Create: POST api/tasks
   FindById: GET api/tasks/[taskId]
-  FindByUserId: GET api/tasks/user/[userId]
+  FindByUserId: GET api/tasks
   UpdateTask: PUT api/tasks/[taskId]
   Delete: DELETE api/tasks/[taskId]
 

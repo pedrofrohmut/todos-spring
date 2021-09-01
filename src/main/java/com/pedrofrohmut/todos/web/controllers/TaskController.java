@@ -11,6 +11,7 @@ import com.pedrofrohmut.todos.domain.factories.UseCaseFactory;
 import com.pedrofrohmut.todos.domain.usecases.TaskUseCase;
 import com.pedrofrohmut.todos.domain.usecases.tasks.CreateTaskUseCase;
 import com.pedrofrohmut.todos.domain.usecases.tasks.FindTaskByIdUseCase;
+import com.pedrofrohmut.todos.domain.usecases.tasks.FindTasksByUserIdUseCase;
 import com.pedrofrohmut.todos.infra.dataaccess.TaskDataAccessImpl;
 import com.pedrofrohmut.todos.infra.dataaccess.UserDataAccessImpl;
 import com.pedrofrohmut.todos.infra.factories.ConnectionFactory;
@@ -67,13 +68,26 @@ public class TaskController {
     }
   }
 
-  public ControllerResponseDto<?> findByUserId(AdaptedRequest request) {
+  public ControllerResponseDto <?> findByUserId(AdaptedRequest<?> request) {
+    final var connection = ConnectionFactory.getConnection();
+    final var findTasksByUserIdUseCase =
+      (FindTasksByUserIdUseCase) UseCaseFactory.getInstance("FindTasksByUserIdUseCase", connection);
+    return findByUserId(findTasksByUserIdUseCase, request);
+  }
+
+  public ControllerResponseDto<?> findByUserId(
+      FindTasksByUserIdUseCase findTasksByUserIdUseCase, AdaptedRequest<?> request) {
     try {
-      final var taskUseCase = createTaskUseCase();
-      final var foundTasks = taskUseCase.findByUserId(request.param, request.authUserId);
+      final var foundTasks = findTasksByUserIdUseCase.execute(request.param, request.authUserId);
       return new ControllerResponseDto<>(200, foundTasks);
-    } catch (UserNotFoundByIdException | UserNotResourceOwnerException e) {
+    } catch (
+        UserNotFoundByIdException |
+        UserNotResourceOwnerException |
+        InvalidEntityException |
+        MissingRequestParametersException e) {
       return new ControllerResponseDto<>(400, e.getMessage());
+    } catch (MissingRequestAuthUserIdException e) {
+      return new ControllerResponseDto<>(401, e.getMessage());
     } catch (Exception e) {
       return new ControllerResponseDto<>(500, e.getMessage());
     }

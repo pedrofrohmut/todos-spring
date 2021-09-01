@@ -23,3 +23,11 @@
 
   - SpringAdapter returns 404 when controller and/or method not found with the string passed and
   should no longer throws any errors
+
+====================================================================================================
+01/09/2021 - Validate Ownership of Tasks and Todos (NOT_DONE)
+
+  - Validate the ownership of tasks and todos comparing:
+    - task.userId == authUserId
+    - todo.userId == authUserId
+    - iterate through when it is a list

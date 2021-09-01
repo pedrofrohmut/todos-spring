@@ -115,7 +115,7 @@ public class TaskControllerFindByIdTests {
   }
 
   @Test
-  @DisplayName("Invalid request.param (taskId) => 400/message")
+  @DisplayName("Invalid request.param for taskId => 400/message")
   void invalidRequestParam() {
     final var invalidTaskId = "";
     final var taskIdErr = getTaskIdErr(invalidTaskId);
