@@ -34,11 +34,6 @@ public class CreateTaskUseCase {
     }
   }
 
-  private void createTask(CreateTaskDto taskDto, String authUserId) {
-    final var newTask = new Task(taskDto.name, taskDto.description, authUserId);
-    taskDataAccess.create(newTask);
-  }
-
   private void checkAuthUserId(String authUserId) {
     if (authUserId == null) {
       throw new MissingRequestAuthUserIdException(errorMessage);
@@ -51,6 +46,11 @@ public class CreateTaskUseCase {
     if (foundUser == null) {
       throw new UserNotFoundByIdException(errorMessage);
     }
+  }
+
+  private void createTask(CreateTaskDto taskDto, String authUserId) {
+    final var newTask = new Task(taskDto.name, taskDto.description, authUserId);
+    taskDataAccess.create(newTask);
   }
 
 }

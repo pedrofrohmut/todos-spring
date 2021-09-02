@@ -12,6 +12,7 @@ import com.pedrofrohmut.todos.domain.usecases.TaskUseCase;
 import com.pedrofrohmut.todos.domain.usecases.tasks.CreateTaskUseCase;
 import com.pedrofrohmut.todos.domain.usecases.tasks.FindTaskByIdUseCase;
 import com.pedrofrohmut.todos.domain.usecases.tasks.FindTasksByUserIdUseCase;
+import com.pedrofrohmut.todos.domain.usecases.tasks.UpdateTaskUseCase;
 import com.pedrofrohmut.todos.infra.dataaccess.TaskDataAccessImpl;
 import com.pedrofrohmut.todos.infra.dataaccess.UserDataAccessImpl;
 import com.pedrofrohmut.todos.infra.factories.ConnectionFactory;
@@ -91,14 +92,29 @@ public class TaskController {
     }
   }
 
-  public ControllerResponseDto<?> update(AdaptedRequest request) {
+  public ControllerResponseDto<?> update(AdaptedRequest<UpdateTaskDto> request) {
+    final var connection = ConnectionFactory.getConnection();
+    final var updateTaskUseCase = (UpdateTaskUseCase) UseCaseFactory.getInstance("UpdateTaskUseCase", connection);
+    return update(updateTaskUseCase, request);
+  }
+
+  public ControllerResponseDto<?> update(UpdateTaskUseCase updateTaskUseCase, AdaptedRequest<UpdateTaskDto> request) {
     try {
-      final var taskUseCase = createTaskUseCase();
-      taskUseCase.update(request.param, (UpdateTaskDto) request.body, request.authUserId);
+      final var updatedTask = (UpdateTaskDto) request.body;
+      final var taskId = request.param;
+      updateTaskUseCase.execute(updatedTask, request.authUserId, taskId);
       return new ControllerResponseDto<>(204);
     } catch (
-        UserNotFoundByIdException | TaskNotFoundByIdException | UserNotResourceOwnerException e) {
+        MissingRequestBodyException |
+        InvalidTaskException |
+        InvalidEntityException |
+        MissingRequestParametersException |
+        UserNotFoundByIdException |
+        TaskNotFoundByIdException |
+        UserNotResourceOwnerException e) {
       return new ControllerResponseDto<>(400, e.getMessage());
+    } catch (MissingRequestAuthUserIdException e) {
+      return new ControllerResponseDto<>(401, e.getMessage());
     } catch (Exception e) {
       return new ControllerResponseDto<>(500, e.getMessage());
     }
