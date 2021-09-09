@@ -10,6 +10,7 @@ import com.pedrofrohmut.todos.domain.errors.UserNotResourceOwnerException;
 import com.pedrofrohmut.todos.domain.factories.UseCaseFactory;
 import com.pedrofrohmut.todos.domain.usecases.TaskUseCase;
 import com.pedrofrohmut.todos.domain.usecases.tasks.CreateTaskUseCase;
+import com.pedrofrohmut.todos.domain.usecases.tasks.DeleteTaskUseCase;
 import com.pedrofrohmut.todos.domain.usecases.tasks.FindTaskByIdUseCase;
 import com.pedrofrohmut.todos.domain.usecases.tasks.FindTasksByUserIdUseCase;
 import com.pedrofrohmut.todos.domain.usecases.tasks.UpdateTaskUseCase;
@@ -120,26 +121,29 @@ public class TaskController {
     }
   }
 
-  public ControllerResponseDto<?> delete(AdaptedRequest request) {
+  public ControllerResponseDto<?> delete(AdaptedRequest<?> request) {
+    final var connection = ConnectionFactory.getConnection();
+    final var deleteTaskUseCase = (DeleteTaskUseCase) UseCaseFactory.getInstance("DeleteTaskUseCase", connection);
+    return delete(deleteTaskUseCase, request);
+  }
+
+  public ControllerResponseDto<?> delete(DeleteTaskUseCase deleteTaskUseCase, AdaptedRequest<?> request) {
     try {
-      final var taskUseCase = createTaskUseCase();
-      taskUseCase.delete(request.param, request.authUserId);
+      final var taskId = request.param;
+      deleteTaskUseCase.execute(request.authUserId, taskId);
       return new ControllerResponseDto<>(204);
     } catch (
-        UserNotFoundByIdException | TaskNotFoundByIdException | UserNotResourceOwnerException e) {
+        InvalidEntityException |
+        MissingRequestParametersException |
+        UserNotFoundByIdException |
+        TaskNotFoundByIdException |
+        UserNotResourceOwnerException e) {
       return new ControllerResponseDto<>(400, e.getMessage());
+    } catch (MissingRequestAuthUserIdException e) {
+      return new ControllerResponseDto<>(401, e.getMessage());
     } catch (Exception e) {
       return new ControllerResponseDto<>(500, e.getMessage());
     }
-  }
-
-  private TaskUseCase createTaskUseCase() {
-    final var connectionFactory = new ConnectionFactory();
-    final var connection = connectionFactory.getConnection();
-    final var userDataAccess = new UserDataAccessImpl(connection);
-    final var taskDataAccess = new TaskDataAccessImpl(connection);
-    final var taskUseCase = new TaskUseCase(userDataAccess, taskDataAccess);
-    return taskUseCase;
   }
 
 }
