@@ -20,16 +20,19 @@ public class CreateUserUseCase {
   }
 
   public void execute(CreateUserDto newUser) {
-    checkIfBodyIsMissing(newUser);
+    checkNewUser(newUser);
     checkIfEmailIsAlreadyTaken(newUser.email);
     final var passwordHash = getPasswordHash(newUser.password);
     createUser(newUser, passwordHash);
   }
 
-  private void checkIfBodyIsMissing(CreateUserDto newUser) {
+  private void checkNewUser(CreateUserDto newUser) {
     if (newUser == null) {
       throw new MissingRequestBodyException(errorMessage);
     }
+    User.validateName(newUser.name);
+    User.validateEmail(newUser.email);
+    User.validatePassword(newUser.password);
   }
 
   private void checkIfEmailIsAlreadyTaken(String email) {

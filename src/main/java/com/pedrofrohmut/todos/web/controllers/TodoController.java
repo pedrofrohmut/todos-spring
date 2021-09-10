@@ -2,28 +2,47 @@ package com.pedrofrohmut.todos.web.controllers;
 
 import com.pedrofrohmut.todos.domain.dtos.CreateTodoDto;
 import com.pedrofrohmut.todos.domain.dtos.UpdateTodoDto;
+import com.pedrofrohmut.todos.domain.errors.InvalidEntityException;
+import com.pedrofrohmut.todos.domain.errors.InvalidTodoException;
 import com.pedrofrohmut.todos.domain.errors.TaskNotFoundByIdException;
 import com.pedrofrohmut.todos.domain.errors.TodoNotFoundByIdException;
 import com.pedrofrohmut.todos.domain.errors.UserNotFoundByIdException;
 import com.pedrofrohmut.todos.domain.errors.UserNotResourceOwnerException;
+import com.pedrofrohmut.todos.domain.factories.UseCaseFactory;
 import com.pedrofrohmut.todos.domain.usecases.TodoUseCase;
+import com.pedrofrohmut.todos.domain.usecases.todos.CreateTodoUseCase;
 import com.pedrofrohmut.todos.infra.dataaccess.TaskDataAccessImpl;
 import com.pedrofrohmut.todos.infra.dataaccess.TodoDataAccessImpl;
 import com.pedrofrohmut.todos.infra.dataaccess.UserDataAccessImpl;
 import com.pedrofrohmut.todos.infra.factories.ConnectionFactory;
 import com.pedrofrohmut.todos.web.adapter.AdaptedRequest;
 import com.pedrofrohmut.todos.web.dtos.ControllerResponseDto;
+import com.pedrofrohmut.todos.web.errors.MissingRequestAuthUserIdException;
+import com.pedrofrohmut.todos.web.errors.MissingRequestBodyException;
 
 public class TodoController {
 
-  public ControllerResponseDto<?> create(AdaptedRequest request) {
+  public ControllerResponseDto<?> create(AdaptedRequest<CreateTodoDto> request) {
+    final var connection = ConnectionFactory.getConnection();
+    final var createTodoUseCase = (CreateTodoUseCase) UseCaseFactory.getInstance("CreateTodoUseCase", connection);
+    return create(createTodoUseCase, request);
+  }
+
+  public ControllerResponseDto<?> create(CreateTodoUseCase createTodoUseCase, AdaptedRequest<CreateTodoDto> request) {
     try {
-      final var todoUseCase = createTodoUseCase();
-      todoUseCase.create((CreateTodoDto) request.body, request.authUserId);
+      final var newTodo = request.body;
+      createTodoUseCase.execute(newTodo, request.authUserId);
       return new ControllerResponseDto<>(201);
     } catch (
-        UserNotFoundByIdException | UserNotResourceOwnerException | TaskNotFoundByIdException e) {
+        MissingRequestBodyException |
+        InvalidTodoException |
+        InvalidEntityException |
+        UserNotFoundByIdException |
+        UserNotResourceOwnerException |
+        TaskNotFoundByIdException e) {
       return new ControllerResponseDto<>(400, e.getMessage());
+    } catch (MissingRequestAuthUserIdException e) {
+      return new ControllerResponseDto<>(401, e.getMessage());
     } catch (Exception e) {
       return new ControllerResponseDto<>(500, e.getMessage());
     }

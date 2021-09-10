@@ -22,16 +22,18 @@ public class CreateTaskUseCase {
   }
 
   public void execute(CreateTaskDto newTask, String authUserId) {
-    checkIfBodyIsMissing(newTask);
+    checkNewTask(newTask);
     checkAuthUserId(authUserId);
     checkUserExists(authUserId);
     createTask(newTask, authUserId);
   }
 
-  private void checkIfBodyIsMissing(CreateTaskDto newTask) {
+  private void checkNewTask(CreateTaskDto newTask) {
     if (newTask == null) {
       throw new MissingRequestBodyException(errorMessage);
     }
+    Task.validateName(newTask.name);
+    Task.validateDescription(newTask.description);
   }
 
   private void checkAuthUserId(String authUserId) {
