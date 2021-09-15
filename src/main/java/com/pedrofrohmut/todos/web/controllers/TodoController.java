@@ -11,6 +11,7 @@ import com.pedrofrohmut.todos.domain.errors.UserNotResourceOwnerException;
 import com.pedrofrohmut.todos.domain.factories.UseCaseFactory;
 import com.pedrofrohmut.todos.domain.usecases.TodoUseCase;
 import com.pedrofrohmut.todos.domain.usecases.todos.CreateTodoUseCase;
+import com.pedrofrohmut.todos.domain.usecases.todos.FindTodoByIdUseCase;
 import com.pedrofrohmut.todos.infra.dataaccess.TaskDataAccessImpl;
 import com.pedrofrohmut.todos.infra.dataaccess.TodoDataAccessImpl;
 import com.pedrofrohmut.todos.infra.dataaccess.UserDataAccessImpl;
@@ -19,6 +20,7 @@ import com.pedrofrohmut.todos.web.adapter.AdaptedRequest;
 import com.pedrofrohmut.todos.web.dtos.ControllerResponseDto;
 import com.pedrofrohmut.todos.web.errors.MissingRequestAuthUserIdException;
 import com.pedrofrohmut.todos.web.errors.MissingRequestBodyException;
+import com.pedrofrohmut.todos.web.errors.MissingRequestParametersException;
 
 public class TodoController {
 
@@ -48,14 +50,24 @@ public class TodoController {
     }
   }
 
-  public ControllerResponseDto<?> findById(AdaptedRequest request) {
+  public ControllerResponseDto<?> findById(AdaptedRequest<?> request) {
+    final var connection = ConnectionFactory.getConnection();
+    final var findTodoByIdUseCase = (FindTodoByIdUseCase) UseCaseFactory.getInstance("FindTodoByIdUseCase", connection);
+    return findById(findTodoByIdUseCase, request);
+  }
+
+  public ControllerResponseDto<?> findById(FindTodoByIdUseCase findTodoByIdUseCase, AdaptedRequest<?> request) {
     try {
-      final var todoUseCase = createTodoUseCase();
-      final var foundTodo = todoUseCase.findById(request.param, request.authUserId);
+      final var foundTodo = findTodoByIdUseCase.execute(request.param, request.authUserId);
       return new ControllerResponseDto<>(200, foundTodo);
     } catch (
-        UserNotFoundByIdException | UserNotResourceOwnerException | TodoNotFoundByIdException e) {
-      return new ControllerResponseDto<>(500, e.getMessage());
+        InvalidEntityException |
+        MissingRequestParametersException |
+        UserNotFoundByIdException |
+        TodoNotFoundByIdException e) {
+      return new ControllerResponseDto<>(400, e.getMessage());
+    } catch (MissingRequestAuthUserIdException | UserNotResourceOwnerException e) {
+      return new ControllerResponseDto<>(401, e.getMessage());
     } catch (Exception e) {
       return new ControllerResponseDto<>(500, e.getMessage());
     }
