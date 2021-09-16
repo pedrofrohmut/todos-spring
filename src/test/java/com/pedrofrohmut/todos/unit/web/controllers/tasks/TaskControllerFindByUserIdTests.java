@@ -22,7 +22,6 @@ import com.pedrofrohmut.todos.mocks.TaskDataAccessMock;
 import com.pedrofrohmut.todos.mocks.UserDataAccessMock;
 import com.pedrofrohmut.todos.web.adapter.AdaptedRequest;
 import com.pedrofrohmut.todos.web.controllers.TaskController;
-import com.pedrofrohmut.todos.web.dtos.ControllerResponseDto;
 import com.pedrofrohmut.todos.web.errors.MissingRequestAuthUserIdException;
 import com.pedrofrohmut.todos.web.errors.MissingRequestParametersException;
 

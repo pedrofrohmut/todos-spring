@@ -12,6 +12,7 @@ import com.pedrofrohmut.todos.domain.factories.UseCaseFactory;
 import com.pedrofrohmut.todos.domain.usecases.TodoUseCase;
 import com.pedrofrohmut.todos.domain.usecases.todos.CreateTodoUseCase;
 import com.pedrofrohmut.todos.domain.usecases.todos.FindTodoByIdUseCase;
+import com.pedrofrohmut.todos.domain.usecases.todos.FindTodosByTaskIdUseCase;
 import com.pedrofrohmut.todos.infra.dataaccess.TaskDataAccessImpl;
 import com.pedrofrohmut.todos.infra.dataaccess.TodoDataAccessImpl;
 import com.pedrofrohmut.todos.infra.dataaccess.UserDataAccessImpl;
@@ -73,14 +74,27 @@ public class TodoController {
     }
   }
 
-  public ControllerResponseDto<?> findByTaskId(AdaptedRequest request) {
+  public ControllerResponseDto<?> findByTaskId(AdaptedRequest<?> request) {
+    final var connection = ConnectionFactory.getConnection();
+    final var findTodosByTaskIdUseCase =
+      (FindTodosByTaskIdUseCase) UseCaseFactory.getInstance("FindTodosByTaskIdUseCase", connection);
+    return findByTaskId(findTodosByTaskIdUseCase, request);
+  }
+
+  public ControllerResponseDto<?> findByTaskId(
+      FindTodosByTaskIdUseCase findTodosByTaskIdUseCase, AdaptedRequest<?> request) {
     try {
-      final var todoUseCase = createTodoUseCase();
-      final var foundTodos = todoUseCase.findByTaskId(request.param, request.authUserId);
+      final var taskId = request.param;
+      final var foundTodos = findTodosByTaskIdUseCase.execute(taskId, request.authUserId);
       return new ControllerResponseDto<>(200, foundTodos);
     } catch (
-        UserNotFoundByIdException | UserNotResourceOwnerException | TaskNotFoundByIdException e) {
+        InvalidEntityException |
+        MissingRequestParametersException |
+        UserNotFoundByIdException |
+        TaskNotFoundByIdException e) {
       return new ControllerResponseDto<>(400, e.getMessage());
+    } catch (MissingRequestAuthUserIdException | UserNotResourceOwnerException e) {
+      return new ControllerResponseDto<>(401, e.getMessage());
     } catch (Exception e) {
       return new ControllerResponseDto<>(500, e.getMessage());
     }

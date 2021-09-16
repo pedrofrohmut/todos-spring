@@ -31,3 +31,13 @@
     - task.userId == authUserId
     - todo.userId == authUserId
     - iterate through when it is a list
+
+====================================================================================================
+16/09/2021 - Validate Ownership has more specific exceptions (NOT_DONE)
+
+  - Instead of using UserNotResourceOwnerException for every case. Start using specific ones for
+  each case:
+    - UserNotResourceOwnerOfTaskException
+    - UserNotResourceOwnerOfTasksException
+    - UserNotResourceOwnerOfTodoException
+    - UserNotResourceOwnerOfTodosException

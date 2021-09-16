@@ -135,9 +135,9 @@ public class TodoControllerFindByIdTests {
     assertThat(controllerResponse.body.toString()).contains(todoIdErr.getMessage());
   }
 
-  private Exception getTodoIdErr(String taskId) {
+  private Exception getTodoIdErr(String todoId) {
     try {
-      Entity.validateId(taskId);
+      Entity.validateId(todoId);
       return null;
     } catch (Exception e) {
       return e;
@@ -184,7 +184,7 @@ public class TodoControllerFindByIdTests {
 
   @Test
   @DisplayName("Valid request, user and todo found but todo.userId != authUserId => 401/message")
-  void userNotResourceOwner() {
+  void userNotResourceOwnerOfTodo() {
     final var otherUserId = UUID.randomUUID().toString();
     final var otherUserTaskId = UUID.randomUUID().toString();
     final var otherUserTodoId = UUID.randomUUID().toString();
