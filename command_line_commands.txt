@@ -15,3 +15,6 @@ mvn test -P unit-tests
 
 # Integrations tests
 mvn test -P integration-tests
+
+# Single file
+mvn test -Dtest=UserControllerLoginTests
