@@ -13,6 +13,7 @@ import com.pedrofrohmut.todos.domain.usecases.TodoUseCase;
 import com.pedrofrohmut.todos.domain.usecases.todos.CreateTodoUseCase;
 import com.pedrofrohmut.todos.domain.usecases.todos.FindTodoByIdUseCase;
 import com.pedrofrohmut.todos.domain.usecases.todos.FindTodosByTaskIdUseCase;
+import com.pedrofrohmut.todos.domain.usecases.todos.SetDoneTodoUseCase;
 import com.pedrofrohmut.todos.domain.usecases.todos.UpdateTodoUseCase;
 import com.pedrofrohmut.todos.infra.dataaccess.TaskDataAccessImpl;
 import com.pedrofrohmut.todos.infra.dataaccess.TodoDataAccessImpl;
@@ -128,14 +129,24 @@ public class TodoController {
     }
   }
 
-  public ControllerResponseDto<?> setDone(AdaptedRequest request) {
+  public ControllerResponseDto<?> setDone(AdaptedRequest<?> request) {
+    final var connection = ConnectionFactory.getConnection();
+    final var setDoneTodoUseCase = (SetDoneTodoUseCase) UseCaseFactory.getInstance("SetDoneTodoUseCase", connection);
+    return setDone(setDoneTodoUseCase, request);
+  }
+
+  public ControllerResponseDto<?> setDone(SetDoneTodoUseCase setDoneTodoUseCase, AdaptedRequest<?> request) {
     try {
-      final var todoUseCase = createTodoUseCase();
-      todoUseCase.setDone(request.param, request.authUserId);
+      setDoneTodoUseCase.execute(request.param, request.authUserId);
       return new ControllerResponseDto<>(204);
     } catch (
-        UserNotFoundByIdException | UserNotResourceOwnerException | TodoNotFoundByIdException e) {
+        InvalidEntityException |
+        MissingRequestParametersException |
+        UserNotFoundByIdException |
+        TodoNotFoundByIdException e) {
       return new ControllerResponseDto<>(400, e.getMessage());
+    } catch (MissingRequestAuthUserIdException | UserNotResourceOwnerException e) {
+      return new ControllerResponseDto<>(401, e.getMessage());
     } catch (Exception e) {
       return new ControllerResponseDto<>(500, e.getMessage());
     }
