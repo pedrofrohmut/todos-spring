@@ -14,6 +14,7 @@ import com.pedrofrohmut.todos.domain.usecases.todos.CreateTodoUseCase;
 import com.pedrofrohmut.todos.domain.usecases.todos.FindTodoByIdUseCase;
 import com.pedrofrohmut.todos.domain.usecases.todos.FindTodosByTaskIdUseCase;
 import com.pedrofrohmut.todos.domain.usecases.todos.SetDoneTodoUseCase;
+import com.pedrofrohmut.todos.domain.usecases.todos.SetNotDoneTodoUseCase;
 import com.pedrofrohmut.todos.domain.usecases.todos.UpdateTodoUseCase;
 import com.pedrofrohmut.todos.infra.dataaccess.TaskDataAccessImpl;
 import com.pedrofrohmut.todos.infra.dataaccess.TodoDataAccessImpl;
@@ -152,14 +153,25 @@ public class TodoController {
     }
   }
 
-  public ControllerResponseDto<?> setNotDone(AdaptedRequest request) {
+  public ControllerResponseDto<?> setNotDone(AdaptedRequest<?> request) {
+    final var connection = ConnectionFactory.getConnection();
+    final var setNotDoneTodoUseCase = (SetNotDoneTodoUseCase) UseCaseFactory.getInstance("SetNotDoneTodoUseCase", connection);
+    return setNotDone(setNotDoneTodoUseCase, request);
+  }
+
+  public ControllerResponseDto<?> setNotDone(SetNotDoneTodoUseCase setNotDoneTodoUseCase, AdaptedRequest<?> request) {
     try {
-      final var todoUseCase = createTodoUseCase();
-      todoUseCase.setNotDone(request.param, request.authUserId);
+      final var todoId = request.param;
+      setNotDoneTodoUseCase.execute(todoId, request.authUserId);
       return new ControllerResponseDto<>(204);
     } catch (
-        UserNotFoundByIdException | UserNotResourceOwnerException | TodoNotFoundByIdException e) {
+        InvalidEntityException |
+        MissingRequestParametersException |
+        UserNotFoundByIdException |
+        TodoNotFoundByIdException e) {
       return new ControllerResponseDto<>(400, e.getMessage());
+    } catch (MissingRequestAuthUserIdException | UserNotResourceOwnerException e) {
+      return new ControllerResponseDto<>(401, e.getMessage());
     } catch (Exception e) {
       return new ControllerResponseDto<>(500, e.getMessage());
     }
