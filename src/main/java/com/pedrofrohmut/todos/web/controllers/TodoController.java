@@ -11,6 +11,7 @@ import com.pedrofrohmut.todos.domain.errors.UserNotResourceOwnerException;
 import com.pedrofrohmut.todos.domain.factories.UseCaseFactory;
 import com.pedrofrohmut.todos.domain.usecases.TodoUseCase;
 import com.pedrofrohmut.todos.domain.usecases.todos.CreateTodoUseCase;
+import com.pedrofrohmut.todos.domain.usecases.todos.DeleteTodoUseCase;
 import com.pedrofrohmut.todos.domain.usecases.todos.FindTodoByIdUseCase;
 import com.pedrofrohmut.todos.domain.usecases.todos.FindTodosByTaskIdUseCase;
 import com.pedrofrohmut.todos.domain.usecases.todos.SetDoneTodoUseCase;
@@ -177,14 +178,25 @@ public class TodoController {
     }
   }
 
-  public ControllerResponseDto<?> delete(AdaptedRequest request) {
+  public ControllerResponseDto<?> delete(AdaptedRequest<?> request) {
+    final var connection = ConnectionFactory.getConnection();
+    final var deleteTodoUseCase = (DeleteTodoUseCase) UseCaseFactory.getInstance("DeleteTodoUseCase", connection);
+    return delete(deleteTodoUseCase, request);
+  }
+
+  public ControllerResponseDto<?> delete(DeleteTodoUseCase deleteTodoUseCase, AdaptedRequest<?> request) {
     try {
-      final var todoUseCase = createTodoUseCase();
-      todoUseCase.delete(request.param, request.authUserId);
+      final var todoId = request.param;
+      deleteTodoUseCase.execute(todoId, request.authUserId);
       return new ControllerResponseDto<>(204);
     } catch (
-        UserNotFoundByIdException | UserNotResourceOwnerException | TodoNotFoundByIdException e) {
+        InvalidEntityException |
+        MissingRequestParametersException |
+        UserNotFoundByIdException |
+        TodoNotFoundByIdException e) {
       return new ControllerResponseDto<>(400, e.getMessage());
+    } catch (MissingRequestAuthUserIdException | UserNotResourceOwnerException e) {
+      return new ControllerResponseDto<>(401, e.getMessage());
     } catch (Exception e) {
       return new ControllerResponseDto<>(500, e.getMessage());
     }
@@ -196,7 +208,9 @@ public class TodoController {
       todoUseCase.clearCompleteByTaskId(request.param, request.authUserId);
       return new ControllerResponseDto<>(204);
     } catch (
-        UserNotFoundByIdException | UserNotResourceOwnerException | TodoNotFoundByIdException e) {
+        UserNotFoundByIdException |
+        UserNotResourceOwnerException |
+        TodoNotFoundByIdException e) {
       return new ControllerResponseDto<>(400, e.getMessage());
     } catch (Exception e) {
       return new ControllerResponseDto<>(500, e.getMessage());

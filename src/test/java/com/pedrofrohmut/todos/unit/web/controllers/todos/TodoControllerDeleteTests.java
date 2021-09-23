@@ -14,7 +14,7 @@ import com.pedrofrohmut.todos.domain.errors.TodoNotFoundByIdException;
 import com.pedrofrohmut.todos.domain.errors.UserNotFoundByIdException;
 import com.pedrofrohmut.todos.domain.errors.UserNotResourceOwnerException;
 import com.pedrofrohmut.todos.domain.services.PasswordService;
-import com.pedrofrohmut.todos.domain.usecases.todos.SetNotDoneTodoUseCase;
+import com.pedrofrohmut.todos.domain.usecases.todos.DeleteTodoUseCase;
 import com.pedrofrohmut.todos.infra.services.BcryptPasswordService;
 import com.pedrofrohmut.todos.mocks.TodoDataAccessMock;
 import com.pedrofrohmut.todos.mocks.UserDataAccessMock;
@@ -28,9 +28,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-@Tag("unti")
-@DisplayName("Todo controller set NOT done")
-public class TodoControllerSetNotDoneTests {
+@Tag("unit")
+@DisplayName("Todo controller delete")
+public class TodoControllerDeleteTests {
 
   static final String TODO_ID = UUID.randomUUID().toString();
   static final String TODO_TITLE = "Todo Title";
@@ -45,16 +45,16 @@ public class TodoControllerSetNotDoneTests {
   final PasswordService passwordService;
   final TodoDataAccess mockTodoDataAccess;
   final UserDataAccess mockUserDataAccess;
-  final SetNotDoneTodoUseCase setNotDoneTodoUseCase;
+  final DeleteTodoUseCase deleteTodoUseCase;
   final TodoController todoController;
 
-  public TodoControllerSetNotDoneTests() {
+  public TodoControllerDeleteTests() {
     passwordService = new BcryptPasswordService();
     mockTodoDataAccess =
       TodoDataAccessMock.getMockForTodoFoundById(TODO_ID, TODO_TITLE, TODO_DESCRIPTION, TODO_IS_DONE, TASK_ID, USER_ID);
     mockUserDataAccess =
       UserDataAccessMock.getMockForUserFoundById(USER_ID, USER_NAME, USER_EMAIL, USER_PASSWORD, passwordService);
-    setNotDoneTodoUseCase = new SetNotDoneTodoUseCase(mockTodoDataAccess, mockUserDataAccess);
+    deleteTodoUseCase = new DeleteTodoUseCase(mockTodoDataAccess, mockUserDataAccess);
     todoController = new TodoController();
   }
 
@@ -72,7 +72,7 @@ public class TodoControllerSetNotDoneTests {
     // Given
     assertThat(request.authUserId).isNull();
     // When
-    final var controllerResponse = todoController.setNotDone(setNotDoneTodoUseCase, request);
+    final var controllerResponse = todoController.delete(deleteTodoUseCase, request);
     // Then
     assertThat(controllerResponse.httpStatus).isEqualTo(401);
     assertThat(controllerResponse.body.toString()).contains(MissingRequestAuthUserIdException.message);
@@ -89,7 +89,7 @@ public class TodoControllerSetNotDoneTests {
     assertThat(authUserIdErr).isNotNull().isInstanceOf(InvalidEntityException.class);
     assertThat(request.authUserId).isEqualTo(invalidAuthUserId);
     // When
-    final var controllerResponse = todoController.setNotDone(setNotDoneTodoUseCase, request);
+    final var controllerResponse = todoController.delete(deleteTodoUseCase, request);
     // Then
     assertThat(controllerResponse.httpStatus).isEqualTo(400);
     assertThat(controllerResponse.body.toString()).contains(authUserIdErr.getMessage());
@@ -104,7 +104,6 @@ public class TodoControllerSetNotDoneTests {
     }
   }
 
-
   @Test
   @DisplayName("Null request.param for todoId => 400/message")
   void nullRequestParam() {
@@ -112,7 +111,7 @@ public class TodoControllerSetNotDoneTests {
     // Given
     assertThat(request.param).isNull();
     // When
-    final var controllerResponse = todoController.setNotDone(setNotDoneTodoUseCase, request);
+    final var controllerResponse = todoController.delete(deleteTodoUseCase, request);
     // Then
     assertThat(controllerResponse.httpStatus).isEqualTo(400);
     assertThat(controllerResponse.body.toString()).contains(MissingRequestParametersException.message);
@@ -129,7 +128,7 @@ public class TodoControllerSetNotDoneTests {
     assertThat(todoIdErr).isNotNull().isInstanceOf(InvalidEntityException.class);
     assertThat(request.param).isEqualTo(invalidTodoId);
     // When
-    final var controllerResponse = todoController.setNotDone(setNotDoneTodoUseCase, request);
+    final var controllerResponse = todoController.delete(deleteTodoUseCase, request);
     // Then
     assertThat(controllerResponse.httpStatus).isEqualTo(400);
     assertThat(controllerResponse.body.toString()).contains(todoIdErr.getMessage());
@@ -148,7 +147,7 @@ public class TodoControllerSetNotDoneTests {
   @DisplayName("Valid request but user not found => 400/message")
   void userNotFound() {
     final var mockUserDataAccess = UserDataAccessMock.getMockForUserNotFoundById(USER_ID);
-    final var setNotDoneTodoUseCase = new SetNotDoneTodoUseCase(mockTodoDataAccess, mockUserDataAccess);
+    final var deleteTodoUseCase = new DeleteTodoUseCase(mockTodoDataAccess, mockUserDataAccess);
     final var foundUser = mockUserDataAccess.findById(USER_ID);
     request.authUserId = USER_ID;
     request.param = TODO_ID;
@@ -156,7 +155,7 @@ public class TodoControllerSetNotDoneTests {
     assertThat(foundUser).isNull();
     assertThat(request.authUserId).isEqualTo(USER_ID);
     // When
-    final var controllerResponse = todoController.setNotDone(setNotDoneTodoUseCase, request);
+    final var controllerResponse = todoController.delete(deleteTodoUseCase, request);
     // Then
     assertThat(controllerResponse.httpStatus).isEqualTo(400);
     assertThat(controllerResponse.body.toString()).contains(UserNotFoundByIdException.message);
@@ -166,7 +165,7 @@ public class TodoControllerSetNotDoneTests {
   @DisplayName("Valid request and user found but todo not found => 400/message")
   void userFoundButTodoNotFound() {
     final var mockTodoDataAccess = TodoDataAccessMock.getMockForTodoNotFoundById(TODO_ID);
-    final var setNotDoneTodoUseCase = new SetNotDoneTodoUseCase(mockTodoDataAccess, mockUserDataAccess);
+    final var deleteTodoUseCase = new DeleteTodoUseCase(mockTodoDataAccess, mockUserDataAccess);
     final var foundUser = mockUserDataAccess.findById(USER_ID);
     final var foundTodo = mockTodoDataAccess.findById(TODO_ID);
     request.authUserId = USER_ID;
@@ -176,7 +175,7 @@ public class TodoControllerSetNotDoneTests {
     assertThat(foundTodo).isNull();
     assertThat(request.param).isEqualTo(TODO_ID);
     // When
-    final var controllerResponse = todoController.setNotDone(setNotDoneTodoUseCase, request);
+    final var controllerResponse = todoController.delete(deleteTodoUseCase, request);
     // Then
     assertThat(controllerResponse.httpStatus).isEqualTo(400);
     assertThat(controllerResponse.body.toString()).contains(TodoNotFoundByIdException.message);
@@ -191,7 +190,7 @@ public class TodoControllerSetNotDoneTests {
     final var mockTodoDataAccess =
       TodoDataAccessMock.getMockForTodoFoundById(
           otherUserTodoId, TODO_TITLE, TODO_DESCRIPTION, TODO_IS_DONE, otherUserTaskId, otherUserId);
-    final var setNotDoneTodoUseCase = new SetNotDoneTodoUseCase(mockTodoDataAccess, mockUserDataAccess);
+    final var deleteTodoUseCase = new DeleteTodoUseCase(mockTodoDataAccess, mockUserDataAccess);
     final var foundUser = mockUserDataAccess.findById(USER_ID);
     final var foundTodo = mockTodoDataAccess.findById(otherUserTodoId);
     request.authUserId = USER_ID;
@@ -203,7 +202,7 @@ public class TodoControllerSetNotDoneTests {
     assertThat(request.authUserId).isEqualTo(USER_ID);
     assertThat(request.param).isEqualTo(otherUserTodoId);
     // When
-    final var controllerResponse = todoController.setNotDone(setNotDoneTodoUseCase, request);
+    final var controllerResponse = todoController.delete(deleteTodoUseCase, request);
     // Then
     assertThat(controllerResponse.httpStatus).isEqualTo(401);
     assertThat(controllerResponse.body.toString()).contains(UserNotResourceOwnerException.message);
@@ -222,11 +221,11 @@ public class TodoControllerSetNotDoneTests {
     assertThat(request.authUserId).isEqualTo(USER_ID);
     assertThat(request.param).isEqualTo(TODO_ID);
     // When
-    final var controllerResponse = todoController.setNotDone(setNotDoneTodoUseCase, request);
+    final var controllerResponse = todoController.delete(deleteTodoUseCase, request);
     // Then
     assertThat(controllerResponse.httpStatus).isEqualTo(204);
     assertThat(controllerResponse.body).isNull();
-    verify(mockTodoDataAccess, times(1)).setNotDone(TODO_ID);
+    verify(mockTodoDataAccess, times(1)).delete(TODO_ID);
   }
 
 }
