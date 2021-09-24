@@ -10,6 +10,7 @@ import com.pedrofrohmut.todos.domain.errors.UserNotFoundByIdException;
 import com.pedrofrohmut.todos.domain.errors.UserNotResourceOwnerException;
 import com.pedrofrohmut.todos.domain.factories.UseCaseFactory;
 import com.pedrofrohmut.todos.domain.usecases.TodoUseCase;
+import com.pedrofrohmut.todos.domain.usecases.todos.ClearCompleteTodosByTaskIdUseCase;
 import com.pedrofrohmut.todos.domain.usecases.todos.CreateTodoUseCase;
 import com.pedrofrohmut.todos.domain.usecases.todos.DeleteTodoUseCase;
 import com.pedrofrohmut.todos.domain.usecases.todos.FindTodoByIdUseCase;
@@ -202,29 +203,30 @@ public class TodoController {
     }
   }
 
-  public ControllerResponseDto<?> clearCompleteByTaskId(AdaptedRequest request) {
+  public ControllerResponseDto<?> clearCompleteByTaskId(AdaptedRequest<?> request) {
+    final var connection = ConnectionFactory.getConnection();
+    final var clearCompleteTodosByTaskIdUseCase =
+      (ClearCompleteTodosByTaskIdUseCase) UseCaseFactory.getInstance("ClearCompleteTodosByTaskIdUseCase", connection);
+    return clearCompleteByTaskId(clearCompleteTodosByTaskIdUseCase, request);
+  }
+
+  public ControllerResponseDto<?> clearCompleteByTaskId(
+      ClearCompleteTodosByTaskIdUseCase clearCompleteTodosByTaskIdUseCase, AdaptedRequest<?> request) {
     try {
-      final var todoUseCase = createTodoUseCase();
-      todoUseCase.clearCompleteByTaskId(request.param, request.authUserId);
+      final var taskId = request.param;
+      clearCompleteTodosByTaskIdUseCase.execute(taskId, request.authUserId);
       return new ControllerResponseDto<>(204);
     } catch (
+        InvalidEntityException |
+        MissingRequestParametersException |
         UserNotFoundByIdException |
-        UserNotResourceOwnerException |
-        TodoNotFoundByIdException e) {
+        TaskNotFoundByIdException e) {
       return new ControllerResponseDto<>(400, e.getMessage());
+    } catch (MissingRequestAuthUserIdException | UserNotResourceOwnerException e) {
+      return new ControllerResponseDto<>(401, e.getMessage());
     } catch (Exception e) {
       return new ControllerResponseDto<>(500, e.getMessage());
     }
-  }
-
-  private TodoUseCase createTodoUseCase() {
-    final var connectionFactory = new ConnectionFactory();
-    final var connection = connectionFactory.getConnection();
-    final var userDataAccess = new UserDataAccessImpl(connection);
-    final var taskDataAccess = new TaskDataAccessImpl(connection);
-    final var todoDataAccess = new TodoDataAccessImpl(connection);
-    final var todoUseCase = new TodoUseCase(userDataAccess, taskDataAccess, todoDataAccess);
-    return todoUseCase;
   }
 
 }
